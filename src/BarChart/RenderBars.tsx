@@ -10,7 +10,7 @@ import {
 } from 'gifted-charts-core'
 
 interface RenderBarsPropsTypes extends RenderBarsPropsType {
-  biggest: number
+  yTranslate: number
 }
 
 const RenderBars = (props: RenderBarsPropsTypes) => {
@@ -51,7 +51,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     topLabelTextStyle,
     pointerConfig,
     noOfSectionsBelowXAxis,
-    biggest
+    yTranslate
   } = props
 
   const barHeight = Math.max(
@@ -59,14 +59,6 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     (Math.abs(item.value) * (containerHeight || 200)) / (maxValue || 200) -
       (xAxisThickness ?? 0)
   )
-  const factor = (containerHeight ?? 0) / maxValue
-  const translateY = biggest * factor + 15 + (containerHeight ?? 200) / 20
-  const adjustBarStyle = {
-    transform: `translateY(${translateY}px)`
-  }
-  const adjustForGradientBars = {
-    transform: `translateY(${translateY - barHeight}px)`
-  }
 
   const {
     commonStyleForBar,
@@ -83,6 +75,17 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
   const localBarInnerComponent = isFocused
     ? focusedBarConfig?.barInnerComponent ?? itemOrPropsBarInnerComponent
     : itemOrPropsBarInnerComponent
+
+  const isStaticGradient =
+    (item.showGradient || props.showGradient) && !isAnimated
+
+  const adjustBarStyle = {
+    transform: `translateY(${yTranslate}px)`,
+    width: commonPropsFor2Dand3Dbars.barWidth
+  }
+  const adjustForGradientBars = {
+    transform: `translateY(${yTranslate - barHeight}px)`
+  }
 
   const barMarginBottom =
     item.barMarginBottom === 0
@@ -233,7 +236,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
           style={{
             ...adjustForGradientBars,
             height: barHeight,
-            width: 30,
+            width: commonPropsFor2Dand3Dbars.barWidth,
             backgroundImage: `linear-gradient(${
               isFocused
                 ? focusedBarConfig?.gradientColor ?? localGradientColor
@@ -265,9 +268,9 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             style={(() => {
               let style: React.CSSProperties = {
                 position: 'absolute',
-                top: (item.barWidth || props.barWidth || 30) * -1,
-                height: item.barWidth || props.barWidth || 30,
-                width: item.barWidth || props.barWidth || 30,
+                top: commonPropsFor2Dand3Dbars.barWidth * -1,
+                height: commonPropsFor2Dand3Dbars.barWidth,
+                width: commonPropsFor2Dand3Dbars.barWidth,
                 justifyContent:
                   (horizontal && !intactTopLabel) || item.value < 0
                     ? 'center'
@@ -374,8 +377,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
               width: props.xAxisIndicesWidth,
               bottom: props.xAxisIndicesHeight / -2,
               left:
-                ((item.barWidth || props.barWidth || 30) -
-                  props.xAxisIndicesWidth) /
+                (commonPropsFor2Dand3Dbars.barWidth - props.xAxisIndicesWidth) /
                 2,
               backgroundColor: props.xAxisIndicesColor.toString()
             }}
@@ -392,13 +394,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
           : isAnimated
           ? animated2DWithGradient(true, false)
           : animated2DWithGradient(true, true)}
-        <div
-          style={
-            (item.showGradient || props.showGradient) && !isAnimated
-              ? adjustForGradientBars
-              : adjustBarStyle
-          }
-        >
+        <div style={isStaticGradient ? adjustForGradientBars : adjustBarStyle}>
           {isAnimated
             ? renderAnimatedLabel(label, labelTextStyle, item.value)
             : renderLabel(label, labelTextStyle, item.value)}

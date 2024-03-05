@@ -88,16 +88,17 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
 
   let container: React.CSSProperties = {
     width: '100%',
+    overflow:'hidden',
     position:'relative',
     height:
       containerHeightIncludingBelowXAxis +
       labelsExtraHeight +
       xAxisLabelsVerticalShift +
       (trimYAxisAtTop ? 0 : yAxisExtraHeight) +
-      50 -
+      20 -
       overflowTop,
     marginTop: trimYAxisAtTop ? containerHeight / 20 : 0,
-    marginBottom: (xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18) - 55 //This is to not let the Things that should be rendered below the chart overlap with it
+    marginBottom: (xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18) - 20 //This is to not let the Things that should be rendered below the chart overlap with it
   }
 
   if (horizontal) {
@@ -124,6 +125,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         style={(() => {
           let style: React.CSSProperties = {
             display:'flex',
+            width: '100%',
+            overflow:'scroll',
             marginLeft:
               (horizontal && !yAxisAtTop)
                 ? -yAxisThickness -

@@ -1,6 +1,6 @@
 {
   "name": "react-gifted-charts",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
@@ -10,7 +10,7 @@
     "@types/node": "^16.18.80",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
-    "gifted-charts-core": "^0.0.30",
+    "gifted-charts-core": "^0.0.31",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",

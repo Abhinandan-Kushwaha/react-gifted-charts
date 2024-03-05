@@ -69,7 +69,7 @@ const Animated2DWithGradient = (props: Animated2DWithGradientPropsType) => {
           style={{
             position: 'absolute',
             bottom: 0,
-            width: '100%',
+            width: item.barWidth ?? props.barWidth ?? 30,
             overflow: 'hidden',
             height:
               (noAnimation

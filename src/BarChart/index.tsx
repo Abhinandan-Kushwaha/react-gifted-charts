@@ -1,10 +1,10 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import RenderBars from './RenderBars';
-import RenderStackBars from './RenderStackBars';
-import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper';
-import {BarChartPropsType, useBarChart} from 'gifted-charts-core';
-import {StripAndLabel} from '../Components/common/StripAndLabel';
-import {Pointer} from '../Components/common/Pointer';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import RenderBars from './RenderBars'
+import RenderStackBars from './RenderStackBars'
+import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
+import { BarChartPropsType, useBarChart } from 'gifted-charts-core'
+import { StripAndLabel } from '../Components/common/StripAndLabel'
+import { Pointer } from '../Components/common/Pointer'
 
 export const BarChart = (props: BarChartPropsType) => {
   // const heightValue = useMemo(() => new Animated.Value(0), []);
@@ -12,15 +12,15 @@ export const BarChart = (props: BarChartPropsType) => {
   // const widthValue = useMemo(() => new Animated.Value(0), []);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const scrollRef = props.scrollRef ?? useRef(null);
+  const scrollRef = props.scrollRef ?? useRef(null)
   const remainingScrollViewProps = {
     onScroll: (ev: any) => props.onScroll?.(ev),
-    onTouchStart: (evt:any) => {
+    onTouchStart: (evt: any) => {
       if (props.renderTooltip) {
-        setSelectedIndex(-1);
+        setSelectedIndex(-1)
       }
-    },
-  };
+    }
+  }
 
   const {
     lineConfig,
@@ -59,6 +59,7 @@ export const BarChart = (props: BarChartPropsType) => {
     setPointerX,
     setPointerIndex,
     maxValue,
+    maxItem,
     responderStartTime,
     setResponderActive,
     activatePointersDelay,
@@ -68,6 +69,7 @@ export const BarChart = (props: BarChartPropsType) => {
     extendedContainerHeight,
     totalWidth,
     stripBehindBars,
+    noOfSections,
     noOfSectionsBelowXAxis,
     stepHeight,
     xAxisLabelsVerticalShift,
@@ -84,8 +86,8 @@ export const BarChart = (props: BarChartPropsType) => {
     appearingOpacity,
     autoShiftLabels,
     getPropsCommonForBarAndStack,
-    barAndLineChartsWrapperProps,
-  } = useBarChart(props);
+    barAndLineChartsWrapperProps
+  } = useBarChart(props)
 
   // const labelsAppear = useCallback(() => {
   //   opacValue.setValue(0);
@@ -115,11 +117,11 @@ export const BarChart = (props: BarChartPropsType) => {
   // }, [decreaseWidth, labelsAppear, animationDuration]);
 
   const renderPointer = (lineNumber: number) => {
-    if (lineNumber === 1 && hidePointer1) return;
+    if (lineNumber === 1 && hidePointer1) return
 
-    const pointerItemLocal = pointerItem;
-    const pointerYLocal = pointerY;
-    const pointerColorLocal = pointerConfig?.pointer1Color || pointerColor;
+    const pointerItemLocal = pointerItem
+    const pointerYLocal = pointerY
+    const pointerColorLocal = pointerConfig?.pointer1Color || pointerColor
 
     return Pointer({
       pointerX,
@@ -129,15 +131,15 @@ export const BarChart = (props: BarChartPropsType) => {
       pointerRadius,
       pointerWidth,
       pointerItemLocal,
-      pointerColorLocal,
-    });
-  };
+      pointerColorLocal
+    })
+  }
 
-  const renderStripAndLabel = (pointerLabelComponent:any) => {
+  const renderStripAndLabel = (pointerLabelComponent: any) => {
     let pointerItemLocal,
-      pointerYLocal = pointerY;
+      pointerYLocal = pointerY
 
-    pointerItemLocal = [pointerItem];
+    pointerItemLocal = [pointerItem]
     return StripAndLabel({
       autoAdjustPointerLabelPosition,
       pointerX,
@@ -162,10 +164,16 @@ export const BarChart = (props: BarChartPropsType) => {
       pointerLabelComponent,
       scrollX: 0,
       pointerEvents,
-      isBarChart: true,
-    });
-  };
-  const biggest = JSON.parse(JSON.stringify(data)).sort((a:any,b:any)=>b.value-a.value)[0]?.value ?? 0
+      isBarChart: true
+    })
+  }
+
+  const factor = (containerHeight ?? 0) / maxValue
+  const yTranslate =
+    maxItem * factor -
+    stepHeight / 2 +
+    30 +
+    (containerHeight ?? 200) / (noOfSections * 2)
 
   const renderChartContent = () => {
     if (pointerConfig) {
@@ -177,8 +185,9 @@ export const BarChart = (props: BarChartPropsType) => {
             bottom: 60,
             paddingLeft: initialSpacing,
             width: totalWidth,
-            display:'flex',
-          }}>
+            display: 'flex'
+          }}
+        >
           {pointerX > 0 && stripBehindBars ? (
             <div
               // pointerEvents={pointerEvents ?? 'none'}
@@ -187,8 +196,9 @@ export const BarChart = (props: BarChartPropsType) => {
                 height:
                   extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
                 bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
-                width: totalWidth,
-              }}>
+                width: totalWidth
+              }}
+            >
               {renderStripAndLabel(null)}
             </div>
           ) : null}
@@ -202,8 +212,9 @@ export const BarChart = (props: BarChartPropsType) => {
                   extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
                 bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
                 width: totalWidth,
-                zIndex: 20,
-              }}>
+                zIndex: 20
+              }}
+            >
               {!stripOverPointer &&
                 !stripBehindBars &&
                 renderStripAndLabel(null)}
@@ -218,11 +229,11 @@ export const BarChart = (props: BarChartPropsType) => {
             </div>
           ) : null}
         </div>
-      );
+      )
     } else {
-      return renderChart();
+      return renderChart()
     }
-  };
+  }
 
   const renderChart = () => {
     if (props.stackData) {
@@ -237,10 +248,11 @@ export const BarChart = (props: BarChartPropsType) => {
             stackBorderTopRightRadius={props.stackBorderTopRightRadius}
             stackBorderBottomLeftRadius={props.stackBorderBottomLeftRadius}
             stackBorderBottomRightRadius={props.stackBorderBottomRightRadius}
+            // yTranslate={yTranslate}
             {...getPropsCommonForBarAndStack(item, index)}
           />
-        );
-      });
+        )
+      })
     } else {
       return data.map((item, index) => (
         <RenderBars
@@ -266,13 +278,12 @@ export const BarChart = (props: BarChartPropsType) => {
           autoShiftLabels={autoShiftLabels}
           barMarginBottom={props.barMarginBottom}
           barStyle={props.barStyle}
-          biggest={biggest}
+          yTranslate={yTranslate}
           {...getPropsCommonForBarAndStack(item, index)}
         />
       ))
-        
     }
-  };
+  }
 
   return (
     <BarAndLineChartsWrapper
@@ -281,5 +292,5 @@ export const BarChart = (props: BarChartPropsType) => {
       renderChartContent={renderChartContent}
       remainingScrollViewProps={remainingScrollViewProps}
     />
-  );
-};
+  )
+}
