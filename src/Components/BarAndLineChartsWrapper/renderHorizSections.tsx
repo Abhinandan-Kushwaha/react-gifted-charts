@@ -84,13 +84,16 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
     return (
       <div
         style={(() => {
-          let style: React.CSSProperties = {}
+          let style: React.CSSProperties = {
+            display: 'flex',
+            flexDirection: 'column'
+          }
           if (index === noOfSections) {
-            style = styles.lastLeftPart
+            style = { ...style, ...styles.lastLeftPart }
           } else if (!index) {
-            style = { justifyContent: 'flex-start' }
+            style = { ...style, justifyContent: 'flex-start' }
           } else {
-            style = styles.leftPart
+            style = { ...style, ...styles.leftPart }
           }
           style = {
             ...style,
@@ -101,10 +104,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
             marginLeft: yAxisLabelWidth
             // marginTop: stepHeight / 2
           }
-          if (!index) {
-            style.marginTop = stepHeight / 2
-          }
-          if (!invertedIndex) {
+          if (!index || !invertedIndex) {
             style.height = stepHeight / 2
           }
           if (yAxisSide === yAxisSides.RIGHT) {
@@ -162,7 +162,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                     yAxisLabelWidth / 2 +
                     yAxisIndicesWidth / 4
                   : 0),
-              marginTop: -5, // added
+              marginTop: -yAxisIndicesHeight / 2, // added
               backgroundColor: yAxisIndicesColor
             }}
           />
@@ -176,8 +176,8 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
       style={(() => {
         let style: React.CSSProperties = {
           ...styles.horizBar,
-          width: (width ?? totalWidth) + endSpacing,
-          top: stepHeight / 2
+          width: (width ?? totalWidth) + endSpacing + yAxisLabelWidth
+          // top: stepHeight / 2
         }
         if (horizontal && !yAxisAtTop) {
           style.transform = `rotateY(180deg)`
@@ -204,8 +204,10 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
           }
           if (yAxisSide === yAxisSides.RIGHT) {
             style.borderRightWidth = yAxisThickness
+            style.borderRightStyle = 'solid'
           } else {
             style.borderLeftWidth = yAxisThickness
+            style.borderLeftStyle = 'solid'
           }
           return style
         })()}
@@ -374,7 +376,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
         <div
           style={{
             display: 'flex',
-            marginTop: stepHeight / -2,
+            // marginTop: stepHeight / -2,
             pointerEvents: 'none'
           }}
         >
@@ -405,9 +407,6 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                   <div
                     style={{
                       ...styles.leftLabel,
-                      height:
-                        (index === noOfSections ? stepHeight / 2 : stepHeight) /
-                        10,
                       width:
                         yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth,
                       ...yAxisLabelContainerStyle
@@ -439,7 +438,10 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                           position: 'absolute',
                           // backgroundColor:'red',
                           zIndex: 1,
-                          top: stepHeight * index + yAxisExtraHeightAtTop + 13,
+                          top:
+                            stepHeight * index +
+                            yAxisExtraHeightAtTop -
+                            stepHeight / 2,
                           width: yAxisLabelWidth,
                           height:
                             index === noOfSections ? stepHeight / 2 : stepHeight
