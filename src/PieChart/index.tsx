@@ -53,6 +53,7 @@ export const PieChart = (props: PieChartPropsType) => {
         borderWidth: innerCircleBorderWidth,
         borderColor: innerCircleBorderColor.toString(),
         borderStyle: 'solid',
+        display:'flex',
         justifyContent: 'center',
         alignItems: 'center',
       };

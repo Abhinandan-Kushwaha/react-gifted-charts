@@ -13,11 +13,13 @@ const BarChartWithGivenNumberOfVerticalLines = () => {
     <div style={{borderWidth:1}}>
       <BarChart
         data={data}
-        // width={300}
-        // showVerticalLines
-        // noOfVerticalLines={7}
-        // verticalLinesSpacing={40}
-        // rulesType={ruleTypes.SOLID}
+        width={300}
+        showVerticalLines
+        noOfVerticalLines={7}
+        verticalLinesSpacing={40}
+        rulesType={ruleTypes.SOLID}
+        showValuesAsTopLabel
+        isAnimated
       />
     </div>
   );

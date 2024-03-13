@@ -13,6 +13,7 @@ export const BarChart = (props: BarChartPropsType) => {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const scrollRef = props.scrollRef ?? useRef(null)
+  const scrollToBarRef = useRef<null | HTMLDivElement>(null)
   const remainingScrollViewProps = {
     onScroll: (ev: any) => props.onScroll?.(ev),
     onTouchStart: (evt: any) => {
@@ -67,7 +68,8 @@ export const BarChart = (props: BarChartPropsType) => {
     pointerVanishDelay,
     containerHeightIncludingBelowXAxis,
     extendedContainerHeight,
-    totalWidth,
+    totalWidth: totalWidthPre,
+    endSpacing,
     stripBehindBars,
     noOfSections,
     noOfSectionsBelowXAxis,
@@ -88,6 +90,15 @@ export const BarChart = (props: BarChartPropsType) => {
     getPropsCommonForBarAndStack,
     barAndLineChartsWrapperProps
   } = useBarChart(props)
+
+  useEffect(() => {
+    if (props.scrollToEnd || props.scrollToIndex)
+      if (scrollToBarRef?.current) {
+        scrollToBarRef.current.scrollIntoView({
+          behavior: 'smooth'
+        })
+      }
+  }, [])
 
   // const labelsAppear = useCallback(() => {
   //   opacValue.setValue(0);
@@ -168,12 +179,12 @@ export const BarChart = (props: BarChartPropsType) => {
     })
   }
 
-  const factor = (containerHeight ?? 0) / maxValue
+  const totalWidth = totalWidthPre - 200
+
   const yTranslate =
-    maxItem * factor -
-    stepHeight / 2 +
-    30 +
-    (containerHeight ?? 200) / (noOfSections * 2)
+    (containerHeight ?? 200) +
+    28 +
+    (props.yAxisExtraHeight ?? containerHeight / 20)
 
   const renderChartContent = () => {
     if (pointerConfig) {
@@ -182,7 +193,7 @@ export const BarChart = (props: BarChartPropsType) => {
           style={{
             position: 'absolute',
             height: containerHeightIncludingBelowXAxis,
-            bottom: 60,
+            bottom: 58,
             paddingLeft: initialSpacing,
             width: totalWidth,
             display: 'flex'
@@ -279,6 +290,9 @@ export const BarChart = (props: BarChartPropsType) => {
           barMarginBottom={props.barMarginBottom}
           barStyle={props.barStyle}
           yTranslate={yTranslate}
+          scrollToBarRef={scrollToBarRef}
+          scrollToIndex={props.scrollToIndex}
+          stepHeight={stepHeight}
           {...getPropsCommonForBarAndStack(item, index)}
         />
       ))

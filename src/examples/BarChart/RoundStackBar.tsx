@@ -37,54 +37,54 @@ const RoundStackBar = () => {
   return (
     <div style={{borderWidth: 1}}>
       <BarChart
-        isAnimated
+        // isAnimated
         width={340}
         rotateLabel
         spacing={40}
-        overflowTop={20}
+        // overflowTop={20}
         noOfSections={4}
         stackBorderTopLeftRadius={20}
         stackData={stackData}
         showValuesAsTopLabel
-        pointerConfig={{
-          initialPointerIndex: 0,
-          stripBehindBars: true,
-          pointerStripHeight: 210,
-          pointerLabelComponent: (items:any) => {
-            return (
-              <div
-                style={{
-                  width: 30,
-                  padding: 6,
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  backgroundColor: '#eee',
-                }}>
-                <div>{items[0].stacks[0].value}</div>
-              </div>
-            );
-          },
-        }}
-        barInnerComponent={(item, index) => {
-          return (
-            <div
-              style={{
-                height: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <div
-                style={{
-                  height: 20,
-                  width: 20,
-                  borderRadius: 10,
-                  backgroundColor: 'white',
-                }}>
-                <div style={{color: 'blue',textAlign:'center'}}>{index}</div>
-              </div>
-            </div>
-          );
-        }}
+        // pointerConfig={{
+        //   initialPointerIndex: 0,
+        //   stripBehindBars: true,
+        //   pointerStripHeight: 210,
+        //   pointerLabelComponent: (items:any) => {
+        //     return (
+        //       <div
+        //         style={{
+        //           width: 30,
+        //           padding: 6,
+        //           borderWidth: 1,
+        //           borderRadius: 8,
+        //           backgroundColor: '#eee',
+        //         }}>
+        //         <div>{items[0].stacks[0].value}</div>
+        //       </div>
+        //     );
+        //   },
+        // }}
+        // barInnerComponent={(item, index) => {
+        //   return (
+        //     <div
+        //       style={{
+        //         height: '100%',
+        //         alignItems: 'center',
+        //         justifyContent: 'center',
+        //       }}>
+        //       <div
+        //         style={{
+        //           height: 20,
+        //           width: 20,
+        //           borderRadius: 10,
+        //           backgroundColor: 'white',
+        //         }}>
+        //         <div style={{color: 'blue',textAlign:'center'}}>{index}</div>
+        //       </div>
+        //     </div>
+        //   );
+        // }}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react'
 import { chartTypes } from 'gifted-charts-core'
 
-const RenderVerticalLines = (props:any) => {
+const RenderVerticalLines = (props: any) => {
   const {
     verticalLinesAr,
     verticalLinesSpacing,
@@ -44,58 +44,28 @@ const RenderVerticalLines = (props:any) => {
 
   const extendedContainerHeight = containerHeight + 10 + labelsExtraHeight
 
+  let totalSpacing = 0
+
   return (
     <div
       style={{
         position: 'absolute',
-        height: extendedContainerHeight,
-        bottom: 60 + xAxisLabelsVerticalShift, //stepHeight * -0.5 + xAxisThickness,
+        height: containerHeightIncludingBelowXAxis,
+        bottom: xAxisLabelsVerticalShift + 70, //(noOfSectionsBelowXAxis ? 22 : 30), //stepHeight * -0.5 + xAxisThickness,
         width: totalWidth,
         zIndex: verticalLinesZIndex || -1
       }}
     >
-      <svg>
+      <svg height={containerHeightIncludingBelowXAxis} width={totalWidth}>
         {verticalLinesAr.map((item: any, index: number) => {
-          let totalSpacing = initialSpacing
           if (verticalLinesSpacing) {
             totalSpacing = verticalLinesSpacing * (index + 1)
           } else {
-            if (stackData) {
-              totalSpacing += (stackData[0].barWidth || barWidth || 30) / 2
-            } else {
-              totalSpacing += (data[0].barWidth || barWidth || 30) / 2
-            }
-            for (let i = 0; i < index; i++) {
-              let actualSpacing = spacing
-              if (stackData) {
-                if (i >= stackData.length - 1) {
-                  actualSpacing += (barWidth || 30) / 2
-                } else {
-                  if (stackData[i].spacing || stackData[i].spacing === 0) {
-                    actualSpacing = stackData[i].spacing
-                  }
-                  if (stackData[i + 1].barWidth) {
-                    actualSpacing += stackData[i + 1].barWidth
-                  } else {
-                    actualSpacing += barWidth || 30
-                  }
-                }
-              } else {
-                if (i >= data.length - 1) {
-                  actualSpacing += (barWidth || 30) / 2
-                } else {
-                  if (data[i].spacing || data[i].spacing === 0) {
-                    actualSpacing = data[i].spacing
-                  }
-                  if (data[i + 1].barWidth) {
-                    actualSpacing += data[i + 1].barWidth
-                  } else {
-                    actualSpacing += barWidth || 30
-                  }
-                }
-              }
-              totalSpacing += actualSpacing
-            }
+            totalSpacing += (data[index].barWidth || barWidth || 30) / 2
+            totalSpacing += index ? spacing : 0
+            totalSpacing += index
+              ? (data[index - 1].barWidth || barWidth || 30) / 2
+              : 0
           }
 
           const x =
@@ -111,9 +81,13 @@ const RenderVerticalLines = (props:any) => {
             <line
               key={index}
               x1={x}
-              y1={extendedContainerHeight - getHeightOfVerticalLine(index)}
+              y1={
+                containerHeightIncludingBelowXAxis -
+                getHeightOfVerticalLine(index) +
+                7
+              }
               x2={x}
-              y2={extendedContainerHeight}
+              y2={containerHeightIncludingBelowXAxis}
               stroke={verticalLinesColor || 'lightgray'}
               strokeWidth={verticalLinesThickness || 2}
               strokeDasharray={verticalLinesStrokeDashArray ?? ''}

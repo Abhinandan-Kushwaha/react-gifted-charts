@@ -85,6 +85,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
       <div
         style={(() => {
           let style: React.CSSProperties = {
+            position: 'relative',
             display: 'flex',
             flexDirection: 'column'
           }
@@ -101,7 +102,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
             backgroundColor: backgroundColor,
             width: (props.width || totalWidth - spacing) + endSpacing,
             height: stepHeight,
-            marginLeft: yAxisLabelWidth
+            marginLeft: yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth
             // marginTop: stepHeight / 2
           }
           if (!index || !invertedIndex) {
@@ -153,14 +154,13 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
         {showYAxisIndices && index !== noOfSections ? (
           <div
             style={{
+              position: 'absolute',
               height: yAxisIndicesHeight,
               width: yAxisIndicesWidth,
               left:
                 yAxisIndicesWidth / -2 +
                 (yAxisSide === yAxisSides.RIGHT
-                  ? (width ?? totalWidth) +
-                    yAxisLabelWidth / 2 +
-                    yAxisIndicesWidth / 4
+                  ? (width ?? totalWidth) + endSpacing
                   : 0),
               marginTop: -yAxisIndicesHeight / 2, // added
               backgroundColor: yAxisIndicesColor
@@ -182,6 +182,9 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
         if (horizontal && !yAxisAtTop) {
           style.transform = `rotateY(180deg)`
         }
+        if (yAxisSide == yAxisSides.RIGHT) {
+          style.marginLeft = -yAxisLabelWidth
+        }
         style = { ...style, ...horizontalRulesStyle }
         return style
       })()}
@@ -190,7 +193,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
         style={{
           ...styles.leftLabel,
           height: yAxisExtraHeightAtTop,
-          width: yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth,
+          width: yAxisLabelWidth,
           ...yAxisLabelContainerStyle
         }}
       />
@@ -205,6 +208,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
           if (yAxisSide === yAxisSides.RIGHT) {
             style.borderRightWidth = yAxisThickness
             style.borderRightStyle = 'solid'
+            style.marginRight = -2
           } else {
             style.borderLeftWidth = yAxisThickness
             style.borderLeftStyle = 'solid'
@@ -436,7 +440,6 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                           ...styles.horizBar,
                           ...styles.leftLabel,
                           position: 'absolute',
-                          // backgroundColor:'red',
                           zIndex: 1,
                           top:
                             stepHeight * index +
@@ -447,8 +450,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                             index === noOfSections ? stepHeight / 2 : stepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
-                          style.left =
-                            (width ?? totalWidth) + yAxisLabelWidth / 2
+                          style.left = (width ?? totalWidth) + endSpacing
                         }
                         if (horizontal && !yAxisAtTop) {
                           style.transform = `translateX(${
@@ -492,11 +494,11 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                   style={(() => {
                     const style: React.CSSProperties = {
                       ...styles.horizBar,
-                      width: (width ?? totalWidth) + 15
+                      width: width ? width + 15 : totalWidth
                     }
-                    if (index === 0) {
-                      style.marginTop = stepHeight / 2
-                    }
+                    // if (index === 0) {
+                    //   style.marginTop = stepHeight / 2
+                    // }
                     return style
                   })()}
                 >
@@ -505,22 +507,34 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                       const style: React.CSSProperties = {
                         ...styles.leftLabel,
                         borderRightWidth: yAxisThickness,
+                        borderRightStyle: 'solid',
                         borderColor: yAxisColor,
-                        marginLeft: yAxisThickness,
-                        height: index === 0 ? stepHeight * 1.5 : stepHeight,
-                        width:
-                          yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth
-                      }
-                      if (index === 0) {
-                        style.marginTop = -stepHeight / 2
+                        marginLeft: yAxisThickness - 1,
+                        height: stepHeight,
+                        width: yAxisLabelWidth,
+                        transform: `translateX(${
+                          yAxisSide === yAxisSides.RIGHT
+                            ? (width ?? totalWidth) + endSpacing
+                            : yAxisLabelWidth -
+                              Math.max((width ? 14 : 19) - endSpacing, 0)
+                        }px)`
                       }
                       return style
                     })()}
                   />
                   <div
                     style={{
-                      ...styles.leftPart,
-                      backgroundColor: backgroundColor
+                      ...styles.leftLabel,
+                      // width: yAxisLabelWidth,
+                      transform: `translateX(${
+                        yAxisSide === yAxisSides.RIGHT
+                          ? 0
+                          : yAxisLabelWidth -
+                            Math.max((width ? 14 : 19) - endSpacing, 0)
+                      }px)`,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      ...yAxisLabelContainerStyle
                     }}
                   >
                     {hideRules ? null : (
@@ -537,6 +551,22 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                         }}
                       />
                     )}
+                    {showYAxisIndices && index !== noOfSections ? (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          height: yAxisIndicesHeight,
+                          width: yAxisIndicesWidth,
+                          left:
+                            yAxisIndicesWidth / -2 +
+                            (yAxisSide === yAxisSides.RIGHT
+                              ? (width ?? totalWidth) + endSpacing
+                              : 0),
+                          marginTop: -yAxisIndicesHeight - 3, // added
+                          backgroundColor: yAxisIndicesColor
+                        }}
+                      />
+                    ) : null}
                   </div>
                 </div>
               )
@@ -564,13 +594,13 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
 
                           position: 'absolute',
                           zIndex: 1,
-                          bottom: stepHeight * index,
+                          bottom: stepHeight * (index - 0.5),
                           width: yAxisLabelWidth,
                           height:
                             index === noOfSections ? stepHeight / 2 : stepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
-                          style.left = (width ?? totalWidth) + yAxisLabelWidth
+                          style.left = (width ?? totalWidth) + endSpacing
                         }
                         style = { ...style, ...yAxisLabelContainerStyle }
                         return style
