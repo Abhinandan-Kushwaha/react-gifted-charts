@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { LegacyRef, RefObject } from 'react'
 // import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
 import Animated2DWithGradient from './Animated2DWithGradient'
 import Cap from '../Components/BarSpecificComponents/cap'
@@ -8,9 +8,13 @@ import {
   RenderBarsPropsType,
   barDataItem
 } from 'gifted-charts-core'
+import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
 
 interface RenderBarsPropsTypes extends RenderBarsPropsType {
   yTranslate: number
+  scrollToBarRef: RefObject<HTMLDivElement>
+  scrollToIndex?: number
+  stepHeight: number
 }
 
 const RenderBars = (props: RenderBarsPropsTypes) => {
@@ -51,7 +55,10 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     topLabelTextStyle,
     pointerConfig,
     noOfSectionsBelowXAxis,
-    yTranslate
+    yTranslate,
+    scrollToBarRef,
+    scrollToIndex,
+    stepHeight
   } = props
 
   const barHeight = Math.max(
@@ -92,17 +99,20 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
       ? 0
       : item.barMarginBottom || props.barMarginBottom || 0
 
+  const prevAndCurrentSpacing =
+    (item.spacing ?? spacing) + (data[index - 1]?.spacing ?? spacing)
+
+  const labelWidth =
+    item.labelWidth ||
+    props.labelWidth ||
+    (item.barWidth || props.barWidth || 30) + prevAndCurrentSpacing / 2
+
   const renderLabel = (label: String, labelTextStyle: any, value: number) => {
     return (
       <div
         style={(() => {
           let style: React.CSSProperties = {
-            width:
-              (item.labelWidth ||
-                props.labelWidth ||
-                item.barWidth ||
-                props.barWidth ||
-                30) + spacing,
+            width: labelWidth,
             left: spacing / -2,
             position: 'absolute',
             height: props.xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18,
@@ -117,8 +127,8 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
               style.transform = `rotate(330deg)`
             } else {
               style.transform = `rotate(${value < 0 ? '240deg' : '60deg'})
-                    translateX(${value < 0 ? 56 : 0})
-                    translateY(${value < 0 ? 32 : 0})`
+                    translateX(${value < 0 ? 56 : (labelWidth - 50) / 2}px)
+                    translateY(${value < 0 ? 32 : -10}px)`
             }
           } else {
             if (horizontal) {
@@ -126,7 +136,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             } else if (value < 0) {
               style.transform = `rotate(180deg) translateY(${
                 autoShiftLabels ? 0 : 16.5 * xAxisTextNumberOfLines + 14
-              })`
+              }px)`
             }
           }
           return style
@@ -137,7 +147,9 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
         ) : (
           <div
             style={(() => {
-              let style: React.CSSProperties = { textAlign: 'center' }
+              let style: React.CSSProperties = {
+                textAlign: rotateLabel ? 'left' : 'center'
+              }
               if (rtl && horizontal) {
                 style.transform = `rotate(180deg)`
               }
@@ -233,16 +245,22 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     return (
       <>
         <div
-          style={{
-            ...adjustForGradientBars,
-            height: barHeight,
-            width: commonPropsFor2Dand3Dbars.barWidth,
-            backgroundImage: `linear-gradient(${
-              isFocused
-                ? focusedBarConfig?.gradientColor ?? localGradientColor
-                : localGradientColor
-            },${localFrontColor.toString()})`
-          }}
+          style={(() => {
+            const style = {
+              ...adjustForGradientBars,
+              height: barHeight,
+              width: commonPropsFor2Dand3Dbars.barWidth,
+              backgroundImage: `linear-gradient(${
+                isFocused
+                  ? focusedBarConfig?.gradientColor ?? localGradientColor
+                  : localGradientColor
+              },${localFrontColor.toString()})`
+            }
+            if (item.value < 0) {
+              style.transform = `rotate(180deg) translateY(${-yTranslate}px)`
+            }
+            return style
+          })()}
         >
           {props.cappedBars && item.value ? (
             <Cap
@@ -268,20 +286,19 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             style={(() => {
               let style: React.CSSProperties = {
                 position: 'absolute',
-                top: commonPropsFor2Dand3Dbars.barWidth * -1,
-                height: commonPropsFor2Dand3Dbars.barWidth,
+                ...adjustForGradientBars,
+                top: -30,
+                height: 30,
                 width: commonPropsFor2Dand3Dbars.barWidth,
-                justifyContent:
-                  (horizontal && !intactTopLabel) || item.value < 0
-                    ? 'center'
-                    : 'flex-end',
+                display: 'flex',
+                justifyContent: 'center',
                 alignItems: 'center'
               }
               if (item.value < 0) {
                 style.transform = `rotate(180deg)`
               }
               if (horizontal && !intactTopLabel) {
-                style.transform = `rotate(270deg`
+                style.transform = `rotate(270deg)`
               }
               if (topLabelContainerStyle) {
                 style = { ...style, ...topLabelContainerStyle }
@@ -292,7 +309,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             })()}
           >
             {showValuesAsTopLabel ? (
-              <div style={topLabelTextStyle}>{item.value}</div>
+              <div>{item.value}</div>
             ) : (
               item.topLabelComponent?.()
             )}
@@ -363,6 +380,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
           barBorderWidth={barBorderWidth}
           barBorderColor={barBorderColor}
           commonStyleForBar={commonStyleForBar}
+          yTranslate={yTranslate}
         />
       </div>
     )
@@ -373,9 +391,9 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             style={{
               zIndex: 2,
               position: 'absolute',
-              height: props.xAxisIndicesHeight,
-              width: props.xAxisIndicesWidth,
-              bottom: props.xAxisIndicesHeight / -2,
+              width: props.xAxisIndicesHeight,
+              height: props.xAxisIndicesWidth,
+              bottom: barHeight - (containerHeight ?? 200) * 1.05 - 31, //props.xAxisIndicesHeight / -2,
               left:
                 (commonPropsFor2Dand3Dbars.barWidth - props.xAxisIndicesWidth) /
                 2,
@@ -383,17 +401,34 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             }}
           />
         )}
-        {isBarBelowXaxisAndInvisible
-          ? null
-          : isThreeD
-          ? null
-          : item.showGradient || props.showGradient
-          ? isAnimated
-            ? animated2DWithGradient(false, false)
-            : static2DWithGradient(item)
-          : isAnimated
-          ? animated2DWithGradient(true, false)
-          : animated2DWithGradient(true, true)}
+        {isBarBelowXaxisAndInvisible ? null : isThreeD ? (
+          <AnimatedThreeDBar
+            {...commonPropsFor2Dand3Dbars}
+            sideWidth={
+              item.sideWidth ||
+              props.sideWidth ||
+              (item.barWidth || props.barWidth || 30) / 2
+            }
+            side={side || 'left'}
+            sideColor={item.sideColor || props.sideColor || ''}
+            topColor={item.topColor || props.topColor || ''}
+            horizontal={horizontal}
+            isAnimated={isAnimated}
+            animationDuration={animationDuration || 800}
+            selectedIndex={selectedIndex}
+            containerHeight={containerHeight ?? 200}
+          />
+        ) : item.showGradient || props.showGradient ? (
+          isAnimated ? (
+            animated2DWithGradient(false, false)
+          ) : (
+            static2DWithGradient(item)
+          )
+        ) : isAnimated ? (
+          animated2DWithGradient(true, false)
+        ) : (
+          animated2DWithGradient(true, true)
+        )}
         <div style={isStaticGradient ? adjustForGradientBars : adjustBarStyle}>
           {isAnimated
             ? renderAnimatedLabel(label, labelTextStyle, item.value)
@@ -414,6 +449,9 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
         </div>
       ) : (
         <div
+          ref={
+            index === (scrollToIndex ?? data.length - 1) ? scrollToBarRef : null
+          }
           // activeOpacity={props.activeOpacity || 0.2}
           onClick={() => {
             if (renderTooltip || props.focusBarOnPress) {

@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { renderHorizSections } from './renderHorizSections'
 import RenderVerticalLines from './renderVerticalLines'
 import {
@@ -7,6 +7,7 @@ import {
   BarAndLineChartsWrapperTypes,
   useBarAndLineChartsWrapper
 } from 'gifted-charts-core'
+import './styles.css'
 
 const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
   const {
@@ -88,8 +89,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
 
   let container: React.CSSProperties = {
     width: '100%',
-    overflow:'hidden',
-    position:'relative',
+    overflow: 'hidden',
+    position: 'relative',
     height:
       containerHeightIncludingBelowXAxis +
       labelsExtraHeight +
@@ -124,11 +125,12 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         ref={scrollRef}
         style={(() => {
           let style: React.CSSProperties = {
-            display:'flex',
+            height: Number(container.height) + 68, // added this to disable vertical scroll
+            display: 'flex',
             width: '100%',
-            overflow:'scroll',
+            overflowX: disableScroll ? 'hidden' : 'scroll',
             marginLeft:
-              (horizontal && !yAxisAtTop)
+              horizontal && !yAxisAtTop
                 ? -yAxisThickness -
                   (props.width ? 20 : 0) -
                   (data[data.length - 1]?.barWidth ?? barWidth ?? 0) / 2
@@ -137,7 +139,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
                 : yAxisLabelWidth + yAxisThickness,
             paddingLeft: initialSpacing,
             position: 'absolute',
-            bottom: chartType === chartTypes.LINE_BI_COLOR ? 0 : xAxisThickness
+            bottom:
+              (chartType === chartTypes.LINE_BI_COLOR ? 0 : xAxisThickness) - 40
           }
           if (!!props.width) {
             style.width = props.width
@@ -148,6 +151,7 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
           }
           return style
         })()}
+        className={showScrollIndicator ? '' : 'hideScrollBar'}
         // contentContainerStyle={(() => {
         //   let style = {
         //     height:
@@ -186,42 +190,45 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         // }}
         {...remainingScrollViewProps}
       >
-          {showVerticalLines ? (
-            <RenderVerticalLines {...verticalLinesProps} />
-          ) : null}
-          {
-            // Only For Bar Charts-
-            // showLine ? <RenderLineInBarChart {...lineInBarChartProps} /> : null
-          }
-          {
-            // Only For Bar Charts-
-            // showLine && points2?.length ? (
-            //   <RenderLineInBarChart {...lineInBarChartProps2} />
-            // ) : null
-          }
-          {
-            // Only For Line Charts-
-            chartType === chartTypes.LINE &&
-              data.map((item: any, index: number) => {
-                return showXAxisIndices || item.showXAxisIndex ? (
-                  <div
-                    key={index + '' + item.value}
-                    style={{
-                      position: 'absolute',
-                      height: xAxisIndicesHeight,
-                      width: xAxisIndicesWidth,
-                      backgroundColor: xAxisIndicesColor.toString(),
-                      bottom: 60 - xAxisIndicesHeight / 2,
-                      left:
-                        index * spacing +
-                        (initialSpacing - xAxisIndicesWidth / 2) -
-                        3,
-                    }}
-                  />
-                ) : null;
-              })
-          }
-          {renderChartContent()}
+        {showVerticalLines ? (
+          <RenderVerticalLines
+            {...verticalLinesProps}
+            noOfSectionsBelowXAxis={noOfSectionsBelowXAxis}
+          />
+        ) : null}
+        {
+          // Only For Bar Charts-
+          // showLine ? <RenderLineInBarChart {...lineInBarChartProps} /> : null
+        }
+        {
+          // Only For Bar Charts-
+          // showLine && points2?.length ? (
+          //   <RenderLineInBarChart {...lineInBarChartProps2} />
+          // ) : null
+        }
+        {
+          // Only For Line Charts-
+          chartType === chartTypes.LINE &&
+            data.map((item: any, index: number) => {
+              return showXAxisIndices || item.showXAxisIndex ? (
+                <div
+                  key={index + '' + item.value}
+                  style={{
+                    position: 'absolute',
+                    height: xAxisIndicesHeight,
+                    width: xAxisIndicesWidth,
+                    backgroundColor: xAxisIndicesColor.toString(),
+                    bottom: 60 - xAxisIndicesHeight / 2,
+                    left:
+                      index * spacing +
+                      (initialSpacing - xAxisIndicesWidth / 2) -
+                      3
+                  }}
+                />
+              ) : null
+            })
+        }
+        {renderChartContent()}
       </div>
       {referenceLinesOverChartContent
         ? renderHorizSections({

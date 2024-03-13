@@ -53,6 +53,7 @@ const BarThreeD = () => {
         sideWidth={15}
         isThreeD
         side="right"
+        isAnimated
       />
     </div>
   );

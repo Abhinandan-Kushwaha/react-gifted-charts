@@ -21,20 +21,43 @@ import SplitPie from "./PieChart/SplitPie";
 import ThreeDPie from "./PieChart/ThreeDPie";
 
 const Examples = () => {
+    const Separator = () => (
+        <div style={{marginBottom:30}} />
+    )
     return(
         <div>
             <h3>Bar Charts:</h3>
             <BarChartWithGivenNumberOfVerticalLines />
+            <Separator />
+
             {/* <BarPairWithLine /> */}
-            {/* <BarThreeD /> */}
+
+            <BarThreeD />
+            <Separator />
+
             <BarWithGradient />
+            <Separator />
+
             <CappedBars />
+            <Separator />
+
             <RoundStackBar />
+            <Separator />
+
             <SimpleBarAnimated />
+            <Separator />
+
             <SimpleBarsEndReached />
+            <Separator />
+
             <SimpleBlueBars />
+            <Separator />
+
             <SimpleBlueBarsVerticalLines />
+            <Separator />
+
             <StackWithNegative />
+            <Separator />
 
             <h3>Pie Charts:</h3>
             <BothSideFocusPie />

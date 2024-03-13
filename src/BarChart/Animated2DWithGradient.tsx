@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import LinearGradient from 'react-native-linear-gradient'
-import Svg, { Defs, Rect } from 'react-native-svg'
 import Cap from '../Components/BarSpecificComponents/cap'
 import { Animated2DWithGradientPropsType } from 'gifted-charts-core'
 
@@ -9,7 +7,12 @@ import { Animated2DWithGradientPropsType } from 'gifted-charts-core'
 //     UIManager.setLayoutAnimationEnabledExperimental(true);
 // }
 
-const Animated2DWithGradient = (props: Animated2DWithGradientPropsType) => {
+interface Ianimated2DWithGradientPropsType
+  extends Animated2DWithGradientPropsType {
+  yTranslate: number
+}
+
+const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
   const {
     barBackgroundPattern,
     patternId,
@@ -29,10 +32,17 @@ const Animated2DWithGradient = (props: Animated2DWithGradientPropsType) => {
     showValuesAsTopLabel,
     topLabelContainerStyle,
     topLabelTextStyle,
-    commonStyleForBar
+    commonStyleForBar,
+    yTranslate
   } = props
   const [height, setHeight] = useState(noAnimation ? props.height : 0.2)
-  const [initialRender, setInitialRender] = useState(noAnimation ? false : true)
+  // const [initialRender, setInitialRender] = useState(noAnimation ? false : true)
+
+  useEffect(() => {
+    if (!noAnimation) {
+      setHeight(props.height)
+    }
+  }, [props.height])
 
   // useEffect(() => {
   //   if (!noAnimation) {
@@ -64,13 +74,14 @@ const Animated2DWithGradient = (props: Animated2DWithGradientPropsType) => {
 
   return (
     <>
-      {!initialRender && (
-        <div
-          style={{
+      <div
+        style={(() => {
+          let style: React.CSSProperties = {
             position: 'absolute',
             bottom: 0,
             width: item.barWidth ?? props.barWidth ?? 30,
             overflow: 'hidden',
+            transition: `height ${animationDuration / 1000}s`,
             height:
               (noAnimation
                 ? Math.max(
@@ -78,120 +89,103 @@ const Animated2DWithGradient = (props: Animated2DWithGradientPropsType) => {
                     (Math.abs(item.value) * (containerHeight || 200)) /
                       (maxValue || 200)
                   )
-                : height) - (barMarginBottom || 0),
-            backgroundColor: props.frontColor.toString()
-          }}
-        >
-          <div
-            style={(() => {
-              let style: React.CSSProperties = {
-                width: '100%',
-                height:
-                  (noAnimation
-                    ? Math.max(
-                        props.minHeight,
-                        (Math.abs(item.value) * (containerHeight || 200)) /
-                          (maxValue || 200)
-                      )
-                    : height) - (barMarginBottom || 0)
-              }
+                : height) - (barMarginBottom || 0)
+          }
+          if (item.value < 0) {
+            style.transform = `rotate(180deg) translateY(${
+              -props.height - (noAnimation ? 2 : 0)
+            }px)`
+          }
 
-              if (item.barStyle) {
-                style = { ...style, ...item.barStyle }
-              } else {
-                style = { ...style, ...barStyle }
-              }
-              return style
-            })()}
-          >
-            {noGradient ? (
-              <div>
-                {props.cappedBars && item.value ? (
-                  <Cap
-                    capThicknessFromItem={item.capThickness}
-                    capThicknessFromProps={props.capThickness}
-                    capColorFromItem={item.capColor}
-                    capColorFromProps={props.capColor}
-                    capRadiusFromItem={item.capRadius}
-                    capRadiusFromProps={props.capRadius}
-                  />
-                ) : null}
-              </div>
-            ) : null
-            // <LinearGradient
-            //   style={commonStyleForBar}
-            //   start={{x: 0, y: 0}}
-            //   end={{x: 1, y: 1}}
-            //   colors={[
-            //     item.gradientColor || props.gradientColor || 'white',
-            //     item.frontColor || props.frontColor || 'black',
-            //   ]}>
-            //   {props.cappedBars && (
-            //     <div
-            //       style={{
-            //         position: 'absolute',
-            //         width: '100%',
-            //         height:
-            //           item.capThickness === 0
-            //             ? 0
-            //             : item.capThickness || props.capThickness || 6,
-            //         backgroundColor:
-            //           item.capColor || props.capColor || 'black',
-            //         borderTopLeftRadius:
-            //           item.capRadius === 0
-            //             ? 0
-            //             : item.capRadius || props.capRadius || 0,
-            //         borderTopRightRadius:
-            //           item.capRadius === 0
-            //             ? 0
-            //             : item.capRadius || props.capRadius || 0,
-            //       }}
-            //     />
-            //   )}
-            // </LinearGradient>
-            }
-            {(item.barBackgroundPattern || barBackgroundPattern) && (
-              <svg>
-                <defs>
-                  {item.barBackgroundPattern
-                    ? item.barBackgroundPattern()
-                    : barBackgroundPattern?.()}
-                </defs>
-                <rect
-                  stroke='transparent'
-                  x='1'
-                  y='1'
-                  width={item.barWidth || props.barWidth || 30}
-                  height={
-                    noAnimation
-                      ? (Math.abs(item.value) * (containerHeight || 200)) /
+          if (noGradient) {
+            style.backgroundColor = props.frontColor.toString()
+          } else {
+            style.backgroundImage = `linear-gradient(${
+              item.gradientColor || props.gradientColor || 'white'
+            },${
+              item.frontColor?.toString() ||
+              props.frontColor?.toString() ||
+              'black'
+            })`
+          }
+
+          return style
+        })()}
+      >
+        <div
+          style={(() => {
+            let style: React.CSSProperties = {
+              width: '100%',
+              height:
+                (noAnimation
+                  ? Math.max(
+                      props.minHeight,
+                      (Math.abs(item.value) * (containerHeight || 200)) /
                         (maxValue || 200)
-                      : height
-                  }
-                  fill={`url(#${item.patternId || patternId})`}
-                />
-              </svg>
-            )}
-            {barInnerComponent ? (
-              <div style={{ height: '100%', width: '100%' }}>
-                {barInnerComponent(item, index)}
-              </div>
+                    )
+                  : height) - (barMarginBottom || 0)
+            }
+
+            if (item.barStyle) {
+              style = { ...style, ...item.barStyle }
+            } else {
+              style = { ...style, ...barStyle }
+            }
+            return style
+          })()}
+        >
+          <div>
+            {props.cappedBars && item.value ? (
+              <Cap
+                capThicknessFromItem={item.capThickness}
+                capThicknessFromProps={props.capThickness}
+                capColorFromItem={item.capColor}
+                capColorFromProps={props.capColor}
+                capRadiusFromItem={item.capRadius}
+                capRadiusFromProps={props.capRadius}
+              />
             ) : null}
           </div>
+
+          {(item.barBackgroundPattern || barBackgroundPattern) && (
+            <svg>
+              <defs>
+                {item.barBackgroundPattern
+                  ? item.barBackgroundPattern()
+                  : barBackgroundPattern?.()}
+              </defs>
+              <rect
+                stroke='transparent'
+                x='1'
+                y='1'
+                width={item.barWidth || props.barWidth || 30}
+                height={
+                  noAnimation
+                    ? (Math.abs(item.value) * (containerHeight || 200)) /
+                      (maxValue || 200)
+                    : height
+                }
+                fill={`url(#${item.patternId || patternId})`}
+              />
+            </svg>
+          )}
+          {barInnerComponent ? (
+            <div style={{ height: '100%', width: '100%' }}>
+              {barInnerComponent(item, index)}
+            </div>
+          ) : null}
         </div>
-      )}
+      </div>
       {item.topLabelComponent || showValuesAsTopLabel ? (
         <div
           style={(() => {
             let style: React.CSSProperties = {
               position: 'absolute',
-              top: (item.barWidth || barWidth || 30) * -1,
-              height: item.barWidth || barWidth || 30,
+              top: -30 - height,
+              height: 30,
               width: item.barWidth || barWidth || 30,
-              justifyContent:
-                (props.horizontal && !intactTopLabel) || item.value < 0
-                  ? 'center'
-                  : 'flex-end',
+              display: 'flex',
+              justifyContent: 'center',
               alignItems: 'center',
               opacity: opacity
             }
