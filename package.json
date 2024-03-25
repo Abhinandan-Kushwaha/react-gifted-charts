@@ -1,7 +1,10 @@
 {
   "name": "react-gifted-charts",
   "version": "0.0.1",
-  "private": true,
+  "main": "src/main.ts",
+  "files": [
+    "src"
+  ],
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -10,7 +13,7 @@
     "@types/node": "^16.18.80",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
-    "gifted-charts-core": "^0.0.31",
+    "gifted-charts-core": "^0.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -19,7 +22,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "tsc -p .",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

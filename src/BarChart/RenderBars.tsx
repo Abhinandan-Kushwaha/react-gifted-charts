@@ -6,18 +6,19 @@ import BarBackgroundPattern from '../Components/BarSpecificComponents/barBackgro
 import {
   getPropsForAnimated2DWithGradient,
   RenderBarsPropsType,
-  barDataItem
+  barDataItem,
+  AxesAndRulesDefaults
 } from 'gifted-charts-core'
 import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
 
-interface RenderBarsPropsTypes extends RenderBarsPropsType {
+interface IRenderBarsPropsTypes extends RenderBarsPropsType {
   yTranslate: number
   scrollToBarRef: RefObject<HTMLDivElement>
   scrollToIndex?: number
   stepHeight: number
 }
 
-const RenderBars = (props: RenderBarsPropsTypes) => {
+const RenderBars = (props: IRenderBarsPropsTypes) => {
   const {
     item,
     index,
@@ -46,7 +47,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     initialSpacing,
     selectedIndex,
     setSelectedIndex,
-    xAxisThickness,
+    xAxisThickness = AxesAndRulesDefaults.xAxisThickness,
     horizontal,
     rtl,
     intactTopLabel,
@@ -58,13 +59,14 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
     yTranslate,
     scrollToBarRef,
     scrollToIndex,
-    stepHeight
+    stepHeight,
+    yAxisOffset
   } = props
 
   const barHeight = Math.max(
-    minHeight,
+    0,
     (Math.abs(item.value) * (containerHeight || 200)) / (maxValue || 200) -
-      (xAxisThickness ?? 0)
+      xAxisThickness
   )
 
   const {
@@ -120,7 +122,8 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
               (rotateLabel
                 ? -40
                 : -6 - xAxisTextNumberOfLines * 18 - xAxisLabelsVerticalShift) -
-              barMarginBottom
+              barMarginBottom -
+              xAxisThickness
           }
           if (rotateLabel) {
             if (horizontal) {
@@ -133,10 +136,8 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
           } else {
             if (horizontal) {
               style.transform = `rotate(-90deg)`
-            } else if (value < 0) {
-              style.transform = `rotate(180deg) translateY(${
-                autoShiftLabels ? 0 : 16.5 * xAxisTextNumberOfLines + 14
-              }px)`
+            } else if (value < 0 && autoShiftLabels) {
+              style.transform = `translateY(${-30}px)`
             }
           }
           return style
@@ -295,7 +296,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
                 alignItems: 'center'
               }
               if (item.value < 0) {
-                style.transform = `rotate(180deg)`
+                style.transform = `translateY(${-barHeight}px)`
               }
               if (horizontal && !intactTopLabel) {
                 style.transform = `rotate(270deg)`
@@ -309,7 +310,7 @@ const RenderBars = (props: RenderBarsPropsTypes) => {
             })()}
           >
             {showValuesAsTopLabel ? (
-              <div>{item.value}</div>
+              <div>{item.value + yAxisOffset}</div>
             ) : (
               item.topLabelComponent?.()
             )}

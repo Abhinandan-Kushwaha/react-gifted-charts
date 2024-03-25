@@ -33,7 +33,8 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
     topLabelContainerStyle,
     topLabelTextStyle,
     commonStyleForBar,
-    yTranslate
+    yTranslate,
+    yAxisOffset
   } = props
   const [height, setHeight] = useState(noAnimation ? props.height : 0.2)
   // const [initialRender, setInitialRender] = useState(noAnimation ? false : true)
@@ -84,11 +85,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
             transition: `height ${animationDuration / 1000}s`,
             height:
               (noAnimation
-                ? Math.max(
-                    props.minHeight,
-                    (Math.abs(item.value) * (containerHeight || 200)) /
-                      (maxValue || 200)
-                  )
+                ? Math.max(props.minHeight, Math.abs(height))
                 : height) - (barMarginBottom || 0)
           }
           if (item.value < 0) {
@@ -118,11 +115,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
               width: '100%',
               height:
                 (noAnimation
-                  ? Math.max(
-                      props.minHeight,
-                      (Math.abs(item.value) * (containerHeight || 200)) /
-                        (maxValue || 200)
-                    )
+                  ? Math.max(props.minHeight, Math.abs(height))
                   : height) - (barMarginBottom || 0)
             }
 
@@ -159,12 +152,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
                 x='1'
                 y='1'
                 width={item.barWidth || props.barWidth || 30}
-                height={
-                  noAnimation
-                    ? (Math.abs(item.value) * (containerHeight || 200)) /
-                      (maxValue || 200)
-                    : height
-                }
+                height={noAnimation ? Math.abs(height) : height}
                 fill={`url(#${item.patternId || patternId})`}
               />
             </svg>
@@ -190,7 +178,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
               opacity: opacity
             }
             if (item.value < 0) {
-              style.transform = `rotate(180deg)`
+              style.transform = `translateY(${height * 2 + 30}px)`
             }
             if (props.horizontal && !intactTopLabel) {
               style.transform = `rotate(270deg)`
@@ -204,7 +192,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
           })()}
         >
           {showValuesAsTopLabel ? (
-            <div style={topLabelTextStyle}>{item.value}</div>
+            <div style={topLabelTextStyle}>{item.value + yAxisOffset}</div>
           ) : (
             item.topLabelComponent?.()
           )}
