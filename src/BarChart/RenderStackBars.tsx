@@ -191,7 +191,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
             return (
               <div
                 key={index}
-                onClick={stackItem.onPress}
+                // onClick={stackItem.onPress}
                 // activeOpacity={activeOpacity}
                 // disabled={disablePress || !stackItem.onPress}
                 style={{

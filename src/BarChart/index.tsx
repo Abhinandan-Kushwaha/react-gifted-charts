@@ -88,7 +88,8 @@ export const BarChart = (props: BarChartPropsType) => {
     appearingOpacity,
     autoShiftLabels,
     getPropsCommonForBarAndStack,
-    barAndLineChartsWrapperProps
+    barAndLineChartsWrapperProps,
+    yAxisExtraHeightAtTop
   } = useBarChart(props)
 
   useEffect(() => {
@@ -181,10 +182,7 @@ export const BarChart = (props: BarChartPropsType) => {
 
   const totalWidth = totalWidthPre - 200
 
-  const yTranslate =
-    (containerHeight ?? 200) +
-    28 +
-    (props.yAxisExtraHeight ?? containerHeight / 20)
+  const yTranslate = (containerHeight ?? 200) + 28 + yAxisExtraHeightAtTop
 
   const renderChartContent = () => {
     if (pointerConfig) {

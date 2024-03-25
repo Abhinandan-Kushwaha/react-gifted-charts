@@ -118,7 +118,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         ? renderHorizSections({
             ...horizSectionProps,
             onlyReferenceLines: false,
-            renderReferenceLines: !referenceLinesOverChartContent
+            renderReferenceLines: !referenceLinesOverChartContent,
+            chartType
           })
         : null}
       <div
@@ -215,14 +216,12 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
                   key={index + '' + item.value}
                   style={{
                     position: 'absolute',
-                    height: xAxisIndicesHeight,
-                    width: xAxisIndicesWidth,
+                    height: xAxisIndicesWidth,
+                    width: xAxisIndicesHeight,
                     backgroundColor: xAxisIndicesColor.toString(),
-                    bottom: 60 - xAxisIndicesHeight / 2,
+                    bottom: 68 - xAxisIndicesHeight / 2,
                     left:
-                      index * spacing +
-                      (initialSpacing - xAxisIndicesWidth / 2) -
-                      3
+                      initialSpacing * 2 + index * spacing - xAxisIndicesHeight
                   }}
                 />
               ) : null
@@ -233,7 +232,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
       {referenceLinesOverChartContent
         ? renderHorizSections({
             ...horizSectionProps,
-            onlyReferenceLines: true
+            onlyReferenceLines: true,
+            chartType
           })
         : null}
     </div>

@@ -5,10 +5,15 @@ import {
   getHorizSectionVals,
   yAxisSides,
   HorizSectionsType,
-  horizSectionPropTypes
+  horizSectionPropTypes,
+  chartTypes
 } from 'gifted-charts-core'
 
-export const renderHorizSections = (props: horizSectionPropTypes) => {
+interface IhorizSectionPropTypes extends horizSectionPropTypes {
+  chartType: chartTypes
+}
+
+export const renderHorizSections = (props: IhorizSectionPropTypes) => {
   const {
     width,
     noOfSectionsBelowXAxis,
@@ -56,7 +61,8 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
     yAxisAtTop,
     secondaryYAxis,
     onlyReferenceLines,
-    renderReferenceLines
+    renderReferenceLines,
+    chartType
   } = props
 
   const {
@@ -78,6 +84,11 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
     getLabelTexts,
     getLabelTextsForSecondaryYAxis
   } = getHorizSectionVals(props)
+  const horizSectionsLeft =
+    (chartType === chartTypes.BAR
+      ? yAxisLabelWidth
+      : yAxisLabelWidth + 21 - Math.min(Math.max(spacing, 21), 56)) -
+    Math.max((width ? 14 : 19) - endSpacing, 0)
 
   const renderAxesAndRules = (index: number) => {
     const invertedIndex = horizSections.length - index - 1
@@ -241,9 +252,10 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
             zIndex: 1,
             bottom:
               (secondaryYAxisConfig.stepHeight ?? 0) *
-              ((isBelow ? 0 : noOfSectionsBelowXAxis) +
-                index -
-                (noOfSectionsBelowXAxis ? 0 : 0.5)),
+                ((isBelow ? 0 : noOfSectionsBelowXAxis) +
+                  index -
+                  (noOfSectionsBelowXAxis ? 0 : 0.5)) +
+              30,
             width: secondaryYAxisConfig.yAxisLabelWidth,
             height: secondaryYAxisConfig.stepHeight ?? 0,
             ...yAxisLabelContainerStyle
@@ -411,8 +423,6 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                   <div
                     style={{
                       ...styles.leftLabel,
-                      width:
-                        yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth,
                       ...yAxisLabelContainerStyle
                     }}
                   />
@@ -450,7 +460,11 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                             index === noOfSections ? stepHeight / 2 : stepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
-                          style.left = (width ?? totalWidth) + endSpacing
+                          style.left =
+                            (width ?? totalWidth) +
+                            (chartType === chartTypes.BAR
+                              ? endSpacing
+                              : 20 - spacing)
                         }
                         if (horizontal && !yAxisAtTop) {
                           style.transform = `translateX(${
@@ -466,7 +480,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                         // ellipsizeMode={'clip'}
                         style={(() => {
                           const style: React.CSSProperties =
-                            yAxisTextStyle ?? {}
+                            { ...yAxisTextStyle } ?? {}
                           if (horizontal) {
                             style.transform = `rotate(${
                               rotateYAxisTexts ?? (rtl ? 90 : -90)
@@ -515,8 +529,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                         transform: `translateX(${
                           yAxisSide === yAxisSides.RIGHT
                             ? (width ?? totalWidth) + endSpacing
-                            : yAxisLabelWidth -
-                              Math.max((width ? 14 : 19) - endSpacing, 0)
+                            : horizSectionsLeft
                         }px)`
                       }
                       return style
@@ -527,10 +540,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                       ...styles.leftLabel,
                       // width: yAxisLabelWidth,
                       transform: `translateX(${
-                        yAxisSide === yAxisSides.RIGHT
-                          ? 0
-                          : yAxisLabelWidth -
-                            Math.max((width ? 14 : 19) - endSpacing, 0)
+                        yAxisSide === yAxisSides.RIGHT ? 0 : horizSectionsLeft
                       }px)`,
                       display: 'flex',
                       alignItems: 'flex-end',
@@ -611,7 +621,7 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
                         // ellipsizeMode={'clip'}
                         style={(() => {
                           const style: React.CSSProperties =
-                            yAxisTextStyle ?? {}
+                            { ...yAxisTextStyle } ?? {}
                           if (index === noOfSections) {
                             style.marginBottom = stepHeight / -2
                           }
@@ -641,9 +651,12 @@ export const renderHorizSections = (props: horizSectionPropTypes) => {
               <div
                 style={{
                   width: secondaryYAxisConfig.yAxisLabelWidth,
-                  left: width ? yAxisLabelWidth : yAxisLabelWidth - spacing,
+                  marginLeft: width
+                    ? yAxisLabelWidth
+                    : yAxisLabelWidth - spacing,
                   borderColor: secondaryYAxisConfig.yAxisColor?.toString(),
                   borderLeftWidth: secondaryYAxisConfig.yAxisThickness,
+                  borderLeftStyle: 'solid',
                   height: containerHeight + yAxisExtraHeightAtTop,
                   bottom: stepHeight / -2
                 }}
