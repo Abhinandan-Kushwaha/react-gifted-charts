@@ -89,9 +89,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
                 : height) - (barMarginBottom || 0)
           }
           if (item.value < 0) {
-            style.transform = `rotate(180deg) translateY(${
-              -props.height - (noAnimation ? 2 : 0)
-            }px)`
+            style.transform = `rotate(180deg) translateY(${-props.height}px)`
           }
 
           if (noGradient) {
