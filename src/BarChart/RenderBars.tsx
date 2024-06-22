@@ -204,9 +204,9 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             if (horizontal) {
               style.transform = `rotate(-90deg)`
             } else if (value < 0) {
-              style.transform = `rotate(180deg) translateY(${
-                autoShiftLabels ? 0 : 16.5 * xAxisTextNumberOfLines + 14
-              })`
+              style.transform = `translateY(${
+                autoShiftLabels ? -16.5 * xAxisTextNumberOfLines - 10 : 0
+              }px)`
             }
           }
           return style
