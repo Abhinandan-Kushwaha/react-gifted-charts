@@ -1,4 +1,4 @@
-import {BarChart} from '../../BarChart';
+import {BarChart} from '../../main/BarChart';
 import React from 'react';
 
 const RoundStackBar = () => {

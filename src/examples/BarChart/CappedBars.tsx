@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChart} from '../../BarChart';
+import {BarChart} from '../../main/BarChart';
 import { yAxisSides } from 'gifted-charts-core';
 
 const CappedBars = () => {

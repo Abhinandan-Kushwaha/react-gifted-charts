@@ -1,5 +1,5 @@
 import React from 'react';
-import {LineChart} from '../../LineChart';
+import {LineChart} from '../../main/LineChart';
 import { ruleTypes } from 'gifted-charts-core';
 
 const CaloriesBurnt = () => {

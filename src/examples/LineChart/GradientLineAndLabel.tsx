@@ -1,5 +1,5 @@
 import React from 'react';
-import {LineChart} from '../../LineChart';
+import {LineChart} from '../../main/LineChart';
 
 const GradientLineAndLabel = () => {
   const offset = 130;

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {BarChart} from '../../BarChart';
+import {BarChart} from '../../main/BarChart';
 
 const SimpleBarsEndReached = () => {
   const [onEndReached, setOnEndReached] = useState(false);

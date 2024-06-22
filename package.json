@@ -1,15 +1,19 @@
 {
   "name": "react-gifted-charts",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "description": "ReactJS counterpart of react-native-gifted-charts",
-  "main": "src/main.ts",
+  "main": "dist/main.js",
   "files": [
-    "src"
+    "dist"
   ],
   "dependencies": {
     "gifted-charts-core": "^0.1.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-react": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -28,7 +32,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "tsc -p .",
+    "build": "babel --extensions .ts,.tsx ./src/main -d ./dist",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

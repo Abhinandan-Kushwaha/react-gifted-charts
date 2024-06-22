@@ -7,6 +7,7 @@ import {
   lineDataItem,
   useLineChartBiColor
 } from 'gifted-charts-core'
+import { screenWidth } from '../utils'
 
 export const LineChartBicolor = (props: LineChartBicolorPropsType) => {
   const scrollRef = useRef()
@@ -73,7 +74,7 @@ export const LineChartBicolor = (props: LineChartBicolorPropsType) => {
     unFocusOnPressOut,
     delayBeforeUnFocus,
     barAndLineChartsWrapperProps
-  } = useLineChartBiColor(props)
+  } = useLineChartBiColor({...props, parentWidth: screenWidth})
 
   // const labelsAppear = useCallback(() => {
   //   opacValue.setValue(0);
