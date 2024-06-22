@@ -1,6 +1,6 @@
 import React from 'react';
 import {View} from 'react-native';
-import {BarChart} from '../../BarChart';
+import {BarChart} from '../../main/BarChart';
 
 const BarThreeD = () => {
   const barData = [

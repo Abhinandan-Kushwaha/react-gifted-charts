@@ -1,5 +1,5 @@
 import React from 'react';
-import {PopulationPyramid} from '../../PopulationPyramid';
+import {PopulationPyramid} from '../../main/PopulationPyramid';
 
 const PopulationChart = () => {
   const popData = [

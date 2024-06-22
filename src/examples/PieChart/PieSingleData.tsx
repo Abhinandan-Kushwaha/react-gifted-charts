@@ -1,5 +1,5 @@
 import React from 'react';
-import {PieChart} from '../../PieChart';
+import {PieChart} from '../../main/PieChart';
 
 const PieSingleData = () => {
   const pieData = [{value: 54, color: '#177AD5', text: '54%'}];

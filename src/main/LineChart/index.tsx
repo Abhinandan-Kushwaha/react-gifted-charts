@@ -283,7 +283,7 @@ export const LineChart = (props: LineChartPropsType) => {
     lineGradientStartColor,
     lineGradientEndColor,
     barAndLineChartsWrapperProps
-  } = useLineChart({ ...props, screenWidth })
+  } = useLineChart({ ...props, parentWidth: screenWidth })
 
   // const widthValuesFromSet = useMemo(
   //   () => dataSet?.map(set => new Animated.Value(0)),

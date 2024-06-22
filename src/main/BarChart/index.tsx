@@ -90,7 +90,7 @@ export const BarChart = (props: BarChartPropsType) => {
     getPropsCommonForBarAndStack,
     barAndLineChartsWrapperProps,
     yAxisExtraHeightAtTop
-  } = useBarChart(props)
+  } = useBarChart({...props, parentWidth: props.parentWidth ?? window.innerWidth})
 
   useEffect(() => {
     if (props.scrollToEnd || props.scrollToIndex)

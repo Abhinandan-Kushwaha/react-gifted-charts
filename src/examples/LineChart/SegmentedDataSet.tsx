@@ -1,5 +1,5 @@
 import React from 'react';
-import {LineChart} from '../../LineChart';
+import {LineChart} from '../../main/LineChart';
 import {DataSet} from 'gifted-charts-core';
 
 const SegmentedDataSetChart = () => {

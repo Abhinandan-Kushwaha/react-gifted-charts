@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineChartBicolor } from '../../LineChart/LineChartBicolor';
+import { LineChartBicolor } from '../../main/LineChart/LineChartBicolor';
 
 const BiColorAreaChart = () => {
   const lineData = [
