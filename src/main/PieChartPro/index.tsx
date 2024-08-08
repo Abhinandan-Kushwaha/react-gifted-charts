@@ -29,7 +29,7 @@ export const PieChartPro = (props: PieChartPropsType) => {
     edgesRadius,
     showGradient,
     ring,
-    pieInnerComponent,
+    centerLabelComponent,
     strokeDashArray
   } = props
 
@@ -44,7 +44,7 @@ export const PieChartPro = (props: PieChartPropsType) => {
       }}
     >
       <div style={{ position: 'absolute' }}>
-        {pieInnerComponent ? pieInnerComponent() : null}
+        {centerLabelComponent ? centerLabelComponent() : null}
       </div>
       <svg
         {...svgProps}

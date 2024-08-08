@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import {
   useRenderStackBars,
   BarDefaults,
   StackedBarChartPropsType
 } from 'gifted-charts-core'
+import Tooltip from '../Components/BarSpecificComponents/tooltip'
 
 const RenderStackBars = (props: StackedBarChartPropsType) => {
   const {
@@ -36,7 +37,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     showValuesAsTopLabel
   } = props
   const {
-    cotainsNegative,
+    containsNegativeValue,
     noAnimation,
     localBarInnerComponent,
     borderRadius,
@@ -52,7 +53,8 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     getBarHeight,
     getPosition,
     lowestBarPosition,
-    getStackBorderRadii
+    getStackBorderRadii,
+    tooltipProps
   } = useRenderStackBars(props)
 
   const prevAndCurrentSpacing =
@@ -287,7 +289,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
               } else {
                 style.top = (containerHeight ?? 200) - totalHeight + 14
               }
-              if (cotainsNegative) {
+              if (containsNegativeValue) {
                 style.transform = `translateY(${totalHeight * 2}px)`
               }
               if (props.horizontal && !props.intactTopLabel) {
@@ -362,19 +364,6 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
           return style
         })()}
       >
-        {/* {props.showVerticalLines && (
-          <div
-            style={{
-              zIndex: props.verticalLinesZIndex,
-              position: 'absolute',
-              height: (containerHeight || 200) + 15,
-              width: props.verticalLinesThickness,
-              bottom: 0,
-              left: (item.barWidth || props.barWidth || 30) / 2,
-              backgroundColor: props.verticalLinesColor,
-            }}
-          />
-        )} */}
         {(props.showXAxisIndices || item.showXAxisIndex) && (
           <div
             style={{
@@ -395,20 +384,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
         {renderLabel(label || '', labelTextStyle)}
       </div>
       {renderTooltip && selectedIndex === index && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: totalHeight + 60,
-            left:
-              index === stackData.length - 1
-                ? leftSpacing - leftShiftForLastIndexTooltip
-                : leftSpacing -
-                  (item.leftShiftForTooltip ?? leftShiftForTooltip ?? 0),
-            zIndex: 1000
-          }}
-        >
-          {renderTooltip(item, index)}
-        </div>
+        <Tooltip {...tooltipProps} />
       )}
     </>
   )

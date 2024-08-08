@@ -22,7 +22,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     yAxisSide,
     horizontalRulesStyle,
     noOfSections,
+    sectionColors,
     stepHeight,
+    negativeStepHeight,
     yAxisLabelWidth,
     yAxisLabelContainerStyle,
     yAxisThickness,
@@ -62,7 +64,8 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     secondaryYAxis,
     onlyReferenceLines,
     renderReferenceLines,
-    chartType
+    chartType,
+    secondaryXAxis
   } = props
 
   const {
@@ -110,7 +113,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
           style = {
             ...style,
             borderColor: yAxisColor,
-            backgroundColor: backgroundColor,
+            backgroundColor: sectionColors?.[invertedIndex] as string ?? backgroundColor,
             width: (props.width || totalWidth - spacing) + endSpacing,
             height: stepHeight,
             marginLeft: yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth
@@ -212,7 +215,12 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
         style={(() => {
           let style: React.CSSProperties = {
             ...styles.leftPart,
-            borderColor: yAxisColor,
+            borderLeftColor: yAxisColor,
+            borderRightColor: yAxisColor,
+            borderTopColor: (secondaryXAxis?.color ?? xAxisColor) as string,
+            borderTopWidth: secondaryXAxis
+              ? secondaryXAxis.thickness ?? xAxisThickness
+              : 0,
             backgroundColor: backgroundColor,
             width: (props.width || totalWidth - spacing) + endSpacing
           }
@@ -375,6 +383,12 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     )
   }
 
+  const leftShiftForRIghtYaxis =
+    (width ? width + 20 : totalWidth) +
+    yAxisLabelWidth / 2 +
+    endSpacing -
+    (chartType === chartTypes.BAR ? 40 : 60);
+
   return (
     <>
       {onlyReferenceLines ? (
@@ -452,24 +466,20 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                           position: 'absolute',
                           zIndex: 1,
                           top:
-                            stepHeight * index +
+                            negativeStepHeight * index +
                             yAxisExtraHeightAtTop -
-                            stepHeight / 2,
+                            negativeStepHeight / 2,
                           width: yAxisLabelWidth,
                           height:
-                            index === noOfSections ? stepHeight / 2 : stepHeight
+                            index === noOfSections ? negativeStepHeight / 2 : negativeStepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
-                          style.left =
-                            (width ?? totalWidth) +
-                            (chartType === chartTypes.BAR
-                              ? endSpacing
-                              : 20 - spacing)
+                          style.left = leftShiftForRIghtYaxis
                         }
                         if (horizontal && !yAxisAtTop) {
                           style.transform = `translateX(${
                             (width ?? totalWidth) - 30 + endSpacing
-                          })`
+                          }px)`
                         }
                         style = { ...style, ...yAxisLabelContainerStyle }
                         return style
@@ -487,7 +497,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                             }deg)`
                           }
                           if (index === noOfSections) {
-                            style.marginBottom = stepHeight / -2
+                            style.marginBottom = negativeStepHeight / -2
                           }
                           return style
                         })()}
@@ -511,7 +521,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                       width: width ? width + 15 : totalWidth
                     }
                     // if (index === 0) {
-                    //   style.marginTop = stepHeight / 2
+                    //   style.marginTop = negativeStepHeight / 2
                     // }
                     return style
                   })()}
@@ -524,7 +534,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                         borderRightStyle: 'solid',
                         borderColor: yAxisColor,
                         marginLeft: yAxisThickness - 1,
-                        height: stepHeight,
+                        height: negativeStepHeight,
                         width: yAxisLabelWidth,
                         transform: `translateX(${
                           yAxisSide === yAxisSides.RIGHT
@@ -604,10 +614,10 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
 
                           position: 'absolute',
                           zIndex: 1,
-                          bottom: stepHeight * (index - 0.5),
+                          bottom: negativeStepHeight * (index - 0.5),
                           width: yAxisLabelWidth,
                           height:
-                            index === noOfSections ? stepHeight / 2 : stepHeight
+                            index === noOfSections ? negativeStepHeight / 2 : negativeStepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
                           style.left = (width ?? totalWidth) + endSpacing
@@ -623,7 +633,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                           const style: React.CSSProperties =
                             { ...yAxisTextStyle } ?? {}
                           if (index === noOfSections) {
-                            style.marginBottom = stepHeight / -2
+                            style.marginBottom = negativeStepHeight / -2
                           }
                           return style
                         })()}

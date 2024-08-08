@@ -43,6 +43,9 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
     if (!noAnimation) {
       setHeight(props.height)
     }
+    else {
+      setHeight(props.height)
+    }
   }, [props.height])
 
   // useEffect(() => {

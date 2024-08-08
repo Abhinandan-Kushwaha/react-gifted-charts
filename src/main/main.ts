@@ -21,5 +21,6 @@ export {
   type chartTypes,
   ruleTypes,
   yAxisSides,
-  type EdgePosition
+  type EdgePosition,
+  type DataSet
 } from 'gifted-charts-core'

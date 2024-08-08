@@ -50,7 +50,8 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
     pointerY,
 
     onEndReached,
-    onStartReached
+    onStartReached,
+    extraWidthDueToDataPoint = 0, // extraWidthDueToDataPoint will be receved from props onlhy in case of LineCharts, for other charts it will be undefined and will default to 0
   } = props
 
   const {
@@ -144,11 +145,11 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
               (chartType === chartTypes.LINE_BI_COLOR ? 0 : xAxisThickness) - 40
           }
           if (!!props.width) {
-            style.width = props.width
+            style.width = props.width + extraWidthDueToDataPoint
           }
           if (horizontal) {
             style.width =
-              (props.width ?? totalWidth) + (props.width ? endSpacing : -20)
+              (props.width ?? totalWidth) + (props.width ? endSpacing : -20) + extraWidthDueToDataPoint
           }
           return style
         })()}

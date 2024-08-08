@@ -74,7 +74,7 @@ export const LineChartBicolor = (props: LineChartBicolorPropsType) => {
     unFocusOnPressOut,
     delayBeforeUnFocus,
     barAndLineChartsWrapperProps
-  } = useLineChartBiColor({...props, parentWidth: screenWidth})
+  } = useLineChartBiColor({...props, parentWidth: props.parentWidth ?? screenWidth})
 
   // const labelsAppear = useCallback(() => {
   //   opacValue.setValue(0);

@@ -1,30 +1,30 @@
 {
   "name": "react-gifted-charts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "ReactJS counterpart of react-native-gifted-charts",
   "main": "dist/main.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "gifted-charts-core": "^0.1.3"
+    "gifted-charts-core": "^0.1.29"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.7",
     "@babel/preset-env": "^7.24.7",
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.80",
-    "@types/react": "^18.2.55",
-    "@types/react-dom": "^18.2.19",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.8",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
-    "typescript": "^5.3.3",
+    "typescript": "^5.5.2",
     "web-vitals": "^2.1.4"
   },
   "peerDependencies": {
@@ -32,7 +32,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "babel --extensions .ts,.tsx ./src/main -d ./dist",
+    "build": "babel --extensions .ts,.tsx ./src/main -d ./dist && cp -r src/main/Components/BarAndLineChartsWrapper/styles.css dist/Components/BarAndLineChartsWrapper/styles.css && cp -r src/main/PieChartPro/styles.css dist/PieChartPro/styles.css",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
