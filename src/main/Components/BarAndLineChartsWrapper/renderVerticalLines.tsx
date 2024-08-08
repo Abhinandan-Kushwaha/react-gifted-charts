@@ -24,7 +24,8 @@ const RenderVerticalLines = (props: any) => {
     chartType,
     containerHeightIncludingBelowXAxis,
     totalWidth,
-    xAxisLabelsVerticalShift
+    xAxisLabelsVerticalShift,
+    verticalLinesStrokeLinecap
   } = props
 
   const getHeightOfVerticalLine = (index: number) => {
@@ -45,6 +46,13 @@ const RenderVerticalLines = (props: any) => {
   const extendedContainerHeight = containerHeight + 10 + labelsExtraHeight
 
   let totalSpacing = 0
+
+  const thickness = verticalLinesThickness || 2
+  const heightAdjustmentDueToStrokeLinecap =
+    verticalLinesStrokeLinecap === 'round' ||
+    verticalLinesStrokeLinecap === 'square'
+      ? thickness / 2
+      : 0
 
   return (
     <div
@@ -82,15 +90,17 @@ const RenderVerticalLines = (props: any) => {
               key={index}
               x1={x}
               y1={
-                containerHeightIncludingBelowXAxis -
+                extendedContainerHeight -
                 getHeightOfVerticalLine(index) +
+                heightAdjustmentDueToStrokeLinecap +
                 7
               }
               x2={x}
-              y2={containerHeightIncludingBelowXAxis}
+              y2={extendedContainerHeight - heightAdjustmentDueToStrokeLinecap}
               stroke={verticalLinesColor || 'lightgray'}
               strokeWidth={verticalLinesThickness || 2}
               strokeDasharray={verticalLinesStrokeDashArray ?? ''}
+              strokeLinecap={verticalLinesStrokeLinecap}
             />
           )
         })}

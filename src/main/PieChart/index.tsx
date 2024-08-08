@@ -5,7 +5,7 @@ import {PieChartPropsType, pieColors, usePieChart} from 'gifted-charts-core';
 export const PieChart = (props: PieChartPropsType) => {
   const {
     radius,
-    extraRadiusForFocused,
+    extraRadius,
     selectedIndex,
     setSelectedIndex,
     startAngle,
@@ -42,13 +42,13 @@ export const PieChart = (props: PieChartPropsType) => {
           canvasWidth / 2 -
           innerRadius +
           shiftInnerCenterX +
-          extraRadiusForFocused +
+          extraRadius +
           paddingHorizontal / 2 -innerCircleBorderWidth,
         top:
           canvasHeight / 2 -
           innerRadius +
           shiftInnerCenterY +
-          extraRadiusForFocused +
+          extraRadius +
           paddingVertical / 2 -innerCircleBorderWidth,
         borderWidth: innerCircleBorderWidth,
         borderColor: innerCircleBorderColor.toString(),
@@ -99,9 +99,9 @@ export const PieChart = (props: PieChartPropsType) => {
     <div
       style={{
         height:
-          (radius + extraRadiusForFocused + paddingVertical / 2) *
+          (radius + extraRadius + paddingVertical / 2) *
           (props.semiCircle ? 1 : 2),
-        width: (radius + extraRadiusForFocused + paddingHorizontal / 2) * 2,
+        width: (radius + extraRadius + paddingHorizontal / 2) * 2,
         overflow: 'hidden',
         position: 'relative'
       }}>
@@ -112,7 +112,7 @@ export const PieChart = (props: PieChartPropsType) => {
           setSelectedIndex={setSelectedIndex}
           paddingHorizontal={paddingHorizontal}
           paddingVertical={paddingVertical}
-          extraRadiusForFocused={extraRadiusForFocused}
+          extraRadius={extraRadius}
         />
       </div>
       {renderInnerCircle(innerRadius, innerCircleBorderWidth)}
@@ -123,8 +123,8 @@ export const PieChart = (props: PieChartPropsType) => {
           <div
             style={{
               position: 'absolute',
-              top: -extraRadiusForFocused,
-              left: -extraRadiusForFocused,
+              top: -extraRadius,
+              left: -extraRadius,
               pointerEvents: 'none'
             }}>
             <PieChartMain
@@ -152,14 +152,14 @@ export const PieChart = (props: PieChartPropsType) => {
                   strokeWidth: 0,
                 },
               ]}
-              radius={radius + extraRadiusForFocused}
+              radius={radius + extraRadius}
               initialAngle={startAngle}
               innerRadius={props.innerRadius || radius / 2.5}
               isBiggerPie
               setSelectedIndex={setSelectedIndex}
               paddingHorizontal={paddingHorizontal}
               paddingVertical={paddingVertical}
-              extraRadiusForFocused={extraRadiusForFocused}
+              extraRadius={extraRadius}
             />
           </div>
         )}

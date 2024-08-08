@@ -3,9 +3,9 @@ import {
   PopulationPyramidPropsTypeReactJS,
   RulesPropsReactJS,
   ruleTypes,
-  usePopulationPyramid
+  usePopulationPyramid,
+  Framework
 } from 'gifted-charts-core'
-import { Framework } from 'gifted-charts-core/src/utils/types'
 
 export const PopulationPyramid = (props: PopulationPyramidPropsTypeReactJS) => {
   const {

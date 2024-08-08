@@ -1,4 +1,4 @@
-import React, { LegacyRef, RefObject } from 'react'
+import React, { RefObject } from 'react'
 // import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
 import Animated2DWithGradient from './Animated2DWithGradient'
 import Cap from '../Components/BarSpecificComponents/cap'
@@ -10,6 +10,7 @@ import {
   AxesAndRulesDefaults
 } from 'gifted-charts-core'
 import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
+import Tooltip from '../Components/BarSpecificComponents/tooltip'
 
 interface IRenderBarsPropsTypes extends RenderBarsPropsType {
   yTranslate: number
@@ -38,7 +39,9 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     animationDuration,
     autoShiftLabels,
     label,
+    secondaryLabel,
     labelTextStyle,
+    secondaryLabelTextStyle,
     xAxisTextNumberOfLines,
     xAxisLabelsVerticalShift,
     renderTooltip,
@@ -60,18 +63,29 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     scrollToBarRef,
     scrollToIndex,
     stepHeight,
-    yAxisOffset
+    yAxisOffset,
+    barWidth,
+    labelsDistanceFromXaxis = 0,
+    stepValue,
+    negativeStepHeight,
+    negativeStepValue,
+    autoCenterTooltip,
+    secondaryXAxis
   } = props
+
+  const heightFactor =
+    item.value < 0
+      ? negativeStepHeight / negativeStepValue
+      : stepHeight / stepValue
 
   const barHeight = Math.max(
     0,
-    (Math.abs(item.value) * (containerHeight || 200)) / (maxValue || 200) -
-      xAxisThickness
+    Math.abs(item.value) * heightFactor - xAxisThickness
   )
 
   const {
     commonStyleForBar,
-    commonPropsFor2Dand3Dbars,
+    commonPropsFor2dAnd3dBars,
     isFocused,
     focusedBarConfig,
     localFrontColor
@@ -90,7 +104,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
 
   const adjustBarStyle = {
     transform: `translateY(${yTranslate}px)`,
-    width: commonPropsFor2Dand3Dbars.barWidth
+    width: commonPropsFor2dAnd3dBars.barWidth
   }
   const adjustForGradientBars = {
     transform: `translateY(${yTranslate - barHeight}px)`
@@ -107,9 +121,14 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
   const labelWidth =
     item.labelWidth ||
     props.labelWidth ||
-    (item.barWidth || props.barWidth || 30) + prevAndCurrentSpacing / 2
+    (item.barWidth || barWidth) + prevAndCurrentSpacing / 2
 
-  const renderLabel = (label: String, labelTextStyle: any, value: number) => {
+  const renderLabel = (
+    top: boolean,
+    label: string,
+    labelTextStyle: any,
+    value: number
+  ) => {
     return (
       <div
         style={(() => {
@@ -118,12 +137,17 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             left: spacing / -2,
             position: 'absolute',
             height: props.xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18,
-            bottom:
-              (rotateLabel
-                ? -40
-                : -6 - xAxisTextNumberOfLines * 18 - xAxisLabelsVerticalShift) -
-              barMarginBottom -
-              xAxisThickness
+            bottom: top
+              ? (containerHeight || 200) +
+                (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
+              : (rotateLabel
+                  ? -40
+                  : -6 -
+                    xAxisTextNumberOfLines * 18 -
+                    xAxisLabelsVerticalShift) -
+                barMarginBottom -
+                xAxisThickness -
+                labelsDistanceFromXaxis
           }
           if (rotateLabel) {
             if (horizontal) {
@@ -143,7 +167,25 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
           return style
         })()}
       >
-        {item.labelComponent ? (
+        {top ? (
+          item.secondaryLabelComponent ? (
+            item.secondaryLabelComponent()
+          ) : (
+            <div
+              style={(() => {
+                let style: React.CSSProperties = { textAlign: 'center' }
+                if (rtl && horizontal) {
+                  style.transform = `rotate(180deg)`
+                }
+                style = { ...style, ...labelTextStyle }
+                return style
+              })()}
+              // numberOfLines={xAxisTextNumberOfLines}
+            >
+              {label}
+            </div>
+          )
+        ) : item.labelComponent ? (
           item.labelComponent()
         ) : (
           <div
@@ -159,7 +201,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             })()}
             // numberOfLines={xAxisTextNumberOfLines}
           >
-            {label || ''}
+            {label}
           </div>
         )}
       </div>
@@ -167,7 +209,8 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
   }
 
   const renderAnimatedLabel = (
-    label: String,
+    top: boolean,
+    label: string,
     labelTextStyle: any,
     value: number
   ) => {
@@ -175,20 +218,20 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
       <div
         style={(() => {
           let style: React.CSSProperties = {
-            width:
-              (item.labelWidth ||
-                props.labelWidth ||
-                item.barWidth ||
-                props.barWidth ||
-                30) + spacing,
+            width: labelWidth,
             left: spacing / -2,
             position: 'absolute',
             height: props.xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18,
-            bottom:
-              (rotateLabel
-                ? -40
-                : -6 - xAxisTextNumberOfLines * 18 - xAxisLabelsVerticalShift) -
-              barMarginBottom,
+            bottom: top
+              ? (containerHeight || 200) +
+                (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
+              : (rotateLabel
+                  ? -40
+                  : -6 -
+                    xAxisTextNumberOfLines * 18 -
+                    xAxisLabelsVerticalShift) -
+                barMarginBottom -
+                labelsDistanceFromXaxis,
             opacity: appearingOpacity
           }
           if (value < 0) {
@@ -212,7 +255,25 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
           return style
         })()}
       >
-        {item.labelComponent ? (
+        {top ? (
+          item.secondaryLabelComponent ? (
+            item.secondaryLabelComponent()
+          ) : (
+            <div
+              style={(() => {
+                let style: React.CSSProperties = { textAlign: 'center' }
+                if (rtl && horizontal) {
+                  style.transform = `rotate(180deg)`
+                }
+                style = { ...style, ...labelTextStyle }
+                return style
+              })()}
+              // numberOfLines={xAxisTextNumberOfLines}
+            >
+              {label}
+            </div>
+          )
+        ) : item.labelComponent ? (
           item.labelComponent()
         ) : (
           <div
@@ -226,7 +287,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             })()}
             // numberOfLines={xAxisTextNumberOfLines}
           >
-            {label || ''}
+            {label}
           </div>
         )}
       </div>
@@ -236,8 +297,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
   let leftSpacing = initialSpacing
   for (let i = 0; i < index; i++) {
     leftSpacing +=
-      (data[i].spacing ?? propSpacing) +
-      (data[i].barWidth || props.barWidth || 30)
+      (data[i].spacing ?? propSpacing) + (data[i].barWidth || barWidth || 30)
   }
 
   const static2DWithGradient = (item: barDataItem) => {
@@ -250,7 +310,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             const style = {
               ...adjustForGradientBars,
               height: barHeight,
-              width: commonPropsFor2Dand3Dbars.barWidth,
+              width: commonPropsFor2dAnd3dBars.barWidth,
               backgroundImage: `linear-gradient(${
                 isFocused
                   ? focusedBarConfig?.gradientColor ?? localGradientColor
@@ -290,7 +350,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
                 ...adjustForGradientBars,
                 top: -30,
                 height: 30,
-                width: commonPropsFor2Dand3Dbars.barWidth,
+                width: commonPropsFor2dAnd3dBars.barWidth,
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center'
@@ -328,7 +388,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
   let barWrapperStyle: React.CSSProperties = {
     // overflow: 'visible',
     marginBottom: 60 + barMarginBottom + xAxisLabelsVerticalShift,
-    width: commonPropsFor2Dand3Dbars.barWidth,
+    width: commonPropsFor2dAnd3dBars.barWidth,
     height: barHeight,
     marginRight: spacing,
     position: 'relative'
@@ -336,12 +396,13 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
   if (item.value < 0) {
     barWrapperStyle.transform = `translateY(
                 ${
-                  (Math.abs(item.value) * (containerHeight || 200)) /
-                  (maxValue || 200)
+                  (containerHeight || 200) -
+                  (barHeight - 10 + xAxisLabelsVerticalShift) +
+                  (item.value < 0 ? Math.abs(item.value) * heightFactor : 0)
                 } rotateZ(180deg)`
-  } else if (pointerConfig) {
+  } else if (item.value < 0) {
     barWrapperStyle.transform = `translateY(${
-      (containerHeight || 200) - (barHeight - 10 + xAxisLabelsVerticalShift)
+      Math.abs(item.value) * heightFactor
     })`
   }
   if (side !== 'right') {
@@ -363,7 +424,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     ) => (
       <div style={adjustBarStyle}>
         <Animated2DWithGradient
-          {...commonPropsFor2Dand3Dbars}
+          {...commonPropsFor2dAnd3dBars}
           animationDuration={animationDuration || 800}
           roundedBottom={props.roundedBottom || false}
           roundedTop={props.roundedTop || false}
@@ -396,7 +457,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
               height: props.xAxisIndicesWidth,
               bottom: barHeight - (containerHeight ?? 200) * 1.05 - 31, //props.xAxisIndicesHeight / -2,
               left:
-                (commonPropsFor2Dand3Dbars.barWidth - props.xAxisIndicesWidth) /
+                (commonPropsFor2dAnd3dBars.barWidth - props.xAxisIndicesWidth) /
                 2,
               backgroundColor: props.xAxisIndicesColor.toString()
             }}
@@ -404,11 +465,11 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
         )}
         {isBarBelowXaxisAndInvisible ? null : isThreeD ? (
           <AnimatedThreeDBar
-            {...commonPropsFor2Dand3Dbars}
+            {...commonPropsFor2dAnd3dBars}
             sideWidth={
               item.sideWidth ||
               props.sideWidth ||
-              (item.barWidth || props.barWidth || 30) / 2
+              (item.barWidth || barWidth) / 2
             }
             side={side || 'left'}
             sideColor={item.sideColor || props.sideColor || ''}
@@ -432,11 +493,40 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
         )}
         <div style={isStaticGradient ? adjustForGradientBars : adjustBarStyle}>
           {isAnimated
-            ? renderAnimatedLabel(label, labelTextStyle, item.value)
-            : renderLabel(label, labelTextStyle, item.value)}
+            ? renderAnimatedLabel(false, label, labelTextStyle, item.value)
+            : renderLabel(false, label, labelTextStyle, item.value)}
+          {secondaryXAxis
+            ? isAnimated
+              ? renderAnimatedLabel(
+                  true,
+                  secondaryLabel,
+                  secondaryLabelTextStyle,
+                  item.value
+                )
+              : renderLabel(
+                  true,
+                  secondaryLabel,
+                  secondaryLabelTextStyle,
+                  item.value
+                )
+            : null}
         </div>
       </>
     )
+  }
+
+  const tooltipProps = {
+    barHeight,
+    barWidth: item.barWidth || barWidth,
+    item,
+    index,
+    isLast: index === data.length - 1,
+    leftSpacing,
+    leftShiftForLastIndexTooltip,
+    leftShiftForTooltip: item.leftShiftForTooltip ?? leftShiftForTooltip ?? 0,
+    renderTooltip,
+    autoCenterTooltip,
+    horizontal
   }
 
   return (
@@ -476,20 +566,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
         </div>
       )}
       {renderTooltip && selectedIndex === index && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: barHeight + 60,
-            left:
-              index === data.length - 1
-                ? leftSpacing - leftShiftForLastIndexTooltip
-                : leftSpacing -
-                  (item?.leftShiftForTooltip ?? leftShiftForTooltip ?? 0),
-            zIndex: 1000
-          }}
-        >
-          {renderTooltip(item, index)}
-        </div>
+        <Tooltip {...tooltipProps} />
       )}
     </>
   )

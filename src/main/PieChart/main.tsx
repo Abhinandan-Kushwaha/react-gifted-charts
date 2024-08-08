@@ -47,15 +47,17 @@ export const PieChartMain = (props: PieChartMainProps) => {
     mData,
     paddingHorizontal,
     paddingVertical,
-    extraRadiusForFocused
+    extraRadius,
+    showExternalLabels,
+    getExternaLabelProperties
   } = getPieChartMainProps(props)
 
   let containerStyle: React.CSSProperties = {
     backgroundColor: backgroundColor.toString(),
     height: semiCircle
-      ? (canvasHeight + paddingVertical) / 2 + extraRadiusForFocused
-      : canvasHeight + paddingVertical + extraRadiusForFocused * 2,
-    width: canvasWidth + paddingHorizontal + extraRadiusForFocused * 2,
+      ? (canvasHeight + paddingVertical) / 2 + extraRadius
+      : canvasHeight + paddingVertical + extraRadius * 2,
+    width: canvasWidth + paddingHorizontal + extraRadius * 2,
     overflow: 'hidden',
     pointerEvents: 'none'
   }
@@ -65,38 +67,24 @@ export const PieChartMain = (props: PieChartMainProps) => {
   }
 
   return (
-    <div
-      style={containerStyle}
-    >
+    <div style={containerStyle}>
       <svg
         style={{ pointerEvents: 'none' }}
         viewBox={`${
-          strokeWidth / -2 +
-          minShiftX -
-          extraRadiusForFocused -
-          paddingHorizontal / 2
-        } ${
-          strokeWidth / -2 +
-          minShiftY -
-          extraRadiusForFocused -
-          paddingVertical / 2
-        } ${
-          (radius + extraRadiusForFocused + strokeWidth) * 2 +
+          strokeWidth / -2 + minShiftX - extraRadius - paddingHorizontal / 2
+        } ${strokeWidth / -2 + minShiftY - extraRadius - paddingVertical / 2} ${
+          (radius + extraRadius + strokeWidth) * 2 +
           paddingHorizontal +
           horizAdjustment +
           (horizAdjustment ? strokeWidth : 0)
         } ${
-          (radius + extraRadiusForFocused + strokeWidth) * 2 +
+          (radius + extraRadius + strokeWidth) * 2 +
           paddingVertical +
           vertAdjustment +
           (vertAdjustment ? strokeWidth : 0)
         }`}
-        height={
-          (radius + extraRadiusForFocused) * 2 + strokeWidth + paddingVertical
-        }
-        width={
-          (radius + extraRadiusForFocused) * 2 + strokeWidth + paddingHorizontal
-        }
+        height={(radius + extraRadius) * 2 + strokeWidth + paddingVertical}
+        width={(radius + extraRadius) * 2 + strokeWidth + paddingHorizontal}
       >
         <defs>
           {data.map((item, index) => {
@@ -212,7 +200,7 @@ export const PieChartMain = (props: PieChartMainProps) => {
           })
         )}
 
-        {(showText || showInnerComponent) &&
+        {(showText || showInnerComponent || showExternalLabels) &&
           data.map((item, index) => {
             const localPieInnerComponent =
               item.pieInnerComponent ?? props.pieInnerComponent
@@ -258,9 +246,49 @@ export const PieChartMain = (props: PieChartMainProps) => {
               }
             }
 
+            const {
+              labelLineColor,
+              labelLineThickness,
+              labelComponentHeight,
+              inX,
+              inY,
+              outX,
+              outY,
+              finalX,
+              labelComponentX,
+              localExternalLabelComponent
+            } = getExternaLabelProperties(item, mx, my, cx, cy)
+
             return (
               <React.Fragment key={index}>
-                {/* <Line x1={mx} x2={cx} y1={my} y2={cy} stroke="black" /> */}
+                {showExternalLabels ? (
+                  <g>
+                    <line
+                      x1={inX}
+                      x2={outX}
+                      y1={inY}
+                      y2={outY}
+                      stroke={labelLineColor as string}
+                      strokeWidth={labelLineThickness}
+                    />
+                    <line
+                      x1={outX}
+                      x2={finalX}
+                      y1={outY}
+                      y2={outY}
+                      stroke={labelLineColor as string}
+                      strokeWidth={labelLineThickness}
+                    />
+                    {localExternalLabelComponent ? (
+                      <g
+                        x={labelComponentX}
+                        y={outY + labelComponentHeight / 2}
+                      >
+                        {localExternalLabelComponent?.(item, index) ?? null}
+                      </g>
+                    ) : null}
+                  </g>
+                ) : null}
                 {showTextBackground ? (
                   <circle
                     style={{ pointerEvents: 'all' }}
@@ -297,42 +325,44 @@ export const PieChartMain = (props: PieChartMainProps) => {
                     }}
                   />
                 ) : null}
-                <text
-                  style={{ pointerEvents: 'all' }}
-                  fill={
-                    item.textColor || textColor || pieColors[(index + 2) % 9]
-                  }
-                  fontSize={item.textSize || textSize}
-                  fontFamily={item.font || props.font}
-                  fontWeight={item.fontWeight || props.fontWeight}
-                  fontStyle={item.fontStyle || props.fontStyle || 'normal'}
-                  x={
-                    x +
-                    (item.shiftTextX || 0) -
-                    (item.textSize || textSize) / 1.8
-                  }
-                  y={y + (item.shiftTextY || 0)}
-                  onClick={() => {
-                    item.onLabelPress
-                      ? item.onLabelPress()
-                      : props.onLabelPress
-                      ? props.onLabelPress(item, index)
-                      : item.onPress
-                      ? item.onPress()
-                      : props.onPress?.(item, index)
-                    if (props.focusOnPress) {
-                      if (props.selectedIndex === index) {
-                        if (toggleFocusOnPress) {
-                          props.setSelectedIndex(-1)
-                        }
-                      } else {
-                        props.setSelectedIndex(index)
-                      }
+                {showText && (
+                  <text
+                    style={{ pointerEvents: 'all' }}
+                    fill={
+                      item.textColor || textColor || pieColors[(index + 2) % 9]
                     }
-                  }}
-                >
-                  {item.text || (showValuesAsLabels ? item.value + '' : '')}
-                </text>
+                    fontSize={item.textSize || textSize}
+                    fontFamily={item.font || props.font}
+                    fontWeight={item.fontWeight || props.fontWeight}
+                    fontStyle={item.fontStyle || props.fontStyle || 'normal'}
+                    x={
+                      x +
+                      (item.shiftTextX || 0) -
+                      (item.textSize || textSize) / 1.8
+                    }
+                    y={y + (item.shiftTextY || 0)}
+                    onClick={() => {
+                      item.onLabelPress
+                        ? item.onLabelPress()
+                        : props.onLabelPress
+                        ? props.onLabelPress(item, index)
+                        : item.onPress
+                        ? item.onPress()
+                        : props.onPress?.(item, index)
+                      if (props.focusOnPress) {
+                        if (props.selectedIndex === index) {
+                          if (toggleFocusOnPress) {
+                            props.setSelectedIndex(-1)
+                          }
+                        } else {
+                          props.setSelectedIndex(index)
+                        }
+                      }
+                    }}
+                  >
+                    {item.text || (showValuesAsLabels ? item.value + '' : '')}
+                  </text>
+                )}
                 {localPieInnerComponent ? (
                   <g x={x} y={y}>
                     {localPieInnerComponent?.(item, index) ?? null}
