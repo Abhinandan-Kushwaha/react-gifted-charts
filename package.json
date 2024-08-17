@@ -28,11 +28,11 @@
     "web-vitals": "^2.1.4"
   },
   "peerDependencies": {
-    "react": "*"
+    "@react-spring/web": "^9.7.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "babel --extensions .ts,.tsx ./src/main -d ./dist && cp -r src/main/Components/BarAndLineChartsWrapper/styles.css dist/Components/BarAndLineChartsWrapper/styles.css && cp -r src/main/PieChartPro/styles.css dist/PieChartPro/styles.css",
+    "build": "rm -rf dist && tsc -p . && ./build.sh && cp -r src/main/Components/BarAndLineChartsWrapper/styles.css dist/Components/BarAndLineChartsWrapper/styles.css && cp -r src/main/PieChartPro/styles.css dist/PieChartPro/styles.css",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
