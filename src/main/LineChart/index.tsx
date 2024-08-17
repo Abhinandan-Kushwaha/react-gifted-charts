@@ -1,4 +1,11 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { styles } from './styles'
 import { screenWidth } from '../utils'
 import {
@@ -19,6 +26,7 @@ import {
 import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
 import { StripAndLabel } from '../Components/common/StripAndLabel'
 import { Pointer } from '../Components/common/Pointer'
+import { animated, useSpring } from '@react-spring/web'
 
 // let initialData: Array<lineDataItem> | null = null;
 // let animations: Array<Animated.Value> = [];
@@ -282,7 +290,7 @@ export const LineChart = (props: LineChartPropsType) => {
     stripStrokeDashArray,
     unFocusOnPressOut,
     delayBeforeUnFocus,
-    containerHeightIncludingBelowXAxis,
+    containerHeightIncludingBelowXAxis = 0,
     lineGradient,
     lineGradientDirection,
     lineGradientStartColor,
@@ -326,10 +334,55 @@ export const LineChart = (props: LineChartPropsType) => {
   //   outputRange: [0, 1],
   // });
 
+  // const [mounted, setMounted] = useState(false)
+  // const [mounted2, setMounted2] = useState(false)
+  // const [mounted3, setMounted3] = useState(false)
+  // const [mounted4, setMounted4] = useState(false)
+  // const [mounted5, setMounted5] = useState(false)
+  const [mountedForDataSet, setMountedForDataSet] = useState(
+    dataSet?.map((v) => false)
+  )
+
+  const { width: widthValue } = useSpring({
+    from: { width: 0 },
+    to: { width: totalWidth },
+    config: { duration: animationDuration }
+  })
+  const { width: widthValue2 } = useSpring({
+    from: { width: 0 },
+    to: { width: totalWidth },
+    delay: animateTogether ? 0 : animationDuration,
+    config: { duration: animationDuration }
+  })
+  const { width: widthValue3 } = useSpring({
+    from: { width: 0 },
+    to: { width: totalWidth },
+    delay: animateTogether ? 0 : animationDuration * 2,
+    config: { duration: animationDuration }
+  })
+  const { width: widthValue4 } = useSpring({
+    from: { width: 0 },
+    to: { width: totalWidth },
+    delay: animateTogether ? 0 : animationDuration * 3,
+    config: { duration: animationDuration }
+  })
+  const { width: widthValue5 } = useSpring({
+    from: { width: 0 },
+    to: { width: totalWidth },
+    delay: animateTogether ? 0 : animationDuration * 4,
+    config: { duration: animationDuration }
+  })
+
+  const { widthValuesFromSet } = useSpring({
+    widthValuesFromSet: mountedForDataSet?.map((v, i) =>
+      mountedForDataSet[i] ? totalWidth : 0
+    )
+  })
+
   // const decreaseWidth = useCallback(() => {
   //   widthValue.setValue(0);
   //   Animated.timing(widthValue, {
-  //     toValue: 1,
+  //     toValue: totalWidth,
   //     duration: animationDuration,
   //     easing: Easing.linear,
   //     useNativeDriver: false,
@@ -339,7 +392,7 @@ export const LineChart = (props: LineChartPropsType) => {
   // const decreaseWidth2 = useCallback(() => {
   //   widthValue2.setValue(0);
   //   Animated.timing(widthValue2, {
-  //     toValue: 1,
+  //     toValue: totalWidth,
   //     duration: animationDuration,
   //     easing: Easing.linear,
   //     useNativeDriver: false,
@@ -349,7 +402,7 @@ export const LineChart = (props: LineChartPropsType) => {
   // const decreaseWidth3 = useCallback(() => {
   //   widthValue3.setValue(0);
   //   Animated.timing(widthValue3, {
-  //     toValue: 1,
+  //     toValue: totalWidth,
   //     duration: animationDuration,
   //     easing: Easing.linear,
   //     useNativeDriver: false,
@@ -359,7 +412,7 @@ export const LineChart = (props: LineChartPropsType) => {
   // const decreaseWidth4 = useCallback(() => {
   //   widthValue4.setValue(0);
   //   Animated.timing(widthValue4, {
-  //     toValue: 1,
+  //     toValue: totalWidth,
   //     duration: animationDuration,
   //     easing: Easing.linear,
   //     useNativeDriver: false,
@@ -369,7 +422,7 @@ export const LineChart = (props: LineChartPropsType) => {
   // const decreaseWidth5 = useCallback(() => {
   //   widthValue5.setValue(0);
   //   Animated.timing(widthValue5, {
-  //     toValue: 1,
+  //     toValue: totalWidth,
   //     duration: animationDuration,
   //     easing: Easing.linear,
   //     useNativeDriver: false,
@@ -381,7 +434,7 @@ export const LineChart = (props: LineChartPropsType) => {
   //     widthValuesFromSet?.[index]?.setValue(0);
   //     if (widthValuesFromSet?.[index]) {
   //       Animated.timing(widthValuesFromSet?.[index], {
-  //         toValue: 1,
+  //         toValue: totalWidth,
   //         duration: animationDuration,
   //         easing: Easing.linear,
   //         useNativeDriver: false,
@@ -391,50 +444,53 @@ export const LineChart = (props: LineChartPropsType) => {
   // }, [animationDuration, widthValuesFromSet]);
 
   // useEffect(() => {
-  //   decreaseWidth();
-  //   labelsAppear();
-  //   widthValuesFromSet?.forEach((item, index) => {
+  //   setMounted(true)
+  //   // labelsAppear();
+  //   // widthValuesFromSet?.forEach((item, index) => {
+  //   //   setTimeout(
+  //   //     () => {
+  //   //       setMountedForDataSet(dataSet?.map((v,i)=>i===index));
+  //   //     },
+  //   //     animateTogether ? 0 : animationDuration * index,
+  //   //   );
+  //   // });
+  //   dataSet?.forEach((item, index) => {
   //     setTimeout(
   //       () => {
-  //         decreaseWidthsFromSet?.[index]?.();
+  //         setMountedForDataSet(dataSet?.map((v, i) => i === index))
   //       },
-  //       animateTogether ? 0 : animationDuration * index,
-  //     );
-  //   });
+  //       animateTogether ? 0 : animationDuration * index
+  //     )
+  //   })
   //   setTimeout(
   //     () => {
-  //       decreaseWidth2();
+  //       setMounted2(true)
   //     },
-  //     animateTogether ? 0 : animationDuration,
-  //   );
+  //     animateTogether ? 0 : animationDuration
+  //   )
   //   setTimeout(
   //     () => {
-  //       decreaseWidth3();
+  //       setMounted3(true)
   //     },
-  //     animateTogether ? 0 : animationDuration * 2,
-  //   );
+  //     animateTogether ? 0 : animationDuration * 2
+  //   )
   //   setTimeout(
   //     () => {
-  //       decreaseWidth4();
+  //       setMounted4(true)
   //     },
-  //     animateTogether ? 0 : animationDuration * 3,
-  //   );
+  //     animateTogether ? 0 : animationDuration * 3
+  //   )
   //   setTimeout(
   //     () => {
-  //       decreaseWidth5();
+  //       setMounted5(true)
   //     },
-  //     animateTogether ? 0 : animationDuration * 4,
-  //   );
+  //     animateTogether ? 0 : animationDuration * 4
+  //   )
   // }, [
   //   animateTogether,
-  //   animationDuration,
-  //   decreaseWidth,
-  //   decreaseWidth2,
-  //   decreaseWidth3,
-  //   decreaseWidth4,
-  //   decreaseWidth5,
-  //   labelsAppear,
-  // ]);
+  //   animationDuration
+  //   // labelsAppear,
+  // ])
 
   const labelsWidth = spacing + labelsExtraHeight
 
@@ -444,12 +500,13 @@ export const LineChart = (props: LineChartPropsType) => {
       containerHeightIncludingBelowXAxis +
       (props.overflowBottom ?? dataPointsRadius1),
     bottom:
-      60 +
+      270 +
       xAxisLabelsVerticalShift +
       labelsExtraHeight -
       xAxisThickness -
       (props.overflowBottom ?? dataPointsRadius1),
-    zIndex: 1
+    zIndex: 1,
+    overflow: 'hidden'
   }
 
   const renderLabel = (
@@ -533,31 +590,6 @@ export const LineChart = (props: LineChartPropsType) => {
   //     </Animated.View>
   //   );
   // };
-
-  // const animatedWidth = widthValue.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: [0, totalWidth],
-  // });
-
-  // const animatedWidth2 = widthValue2.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: [0, totalWidth],
-  // });
-
-  // const animatedWidth3 = widthValue3.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: [0, totalWidth],
-  // });
-
-  // const animatedWidth4 = widthValue4.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: [0, totalWidth],
-  // });
-
-  // const animatedWidth5 = widthValue5.interpolate({
-  //   inputRange: [0, 1],
-  //   outputRange: [0, totalWidth],
-  // });
 
   const onStripPress = (item: lineDataItem, index: number) => {
     if (props.focusedDataPointIndex === undefined || !props.onFocus) {
@@ -1053,8 +1085,15 @@ export const LineChart = (props: LineChartPropsType) => {
   const renderIntersection = () => {
     return (
       <div style={{ ...svgWrapperViewStyle, width: totalWidth }}>
-        <svg>
-          {/* Define the pathe path1 & path2 */}
+        <svg
+          height={
+            containerHeightIncludingBelowXAxis +
+            (props.overflowBottom ?? dataPointsRadius1) -
+            6
+          }
+          width={totalWidth}
+        >
+          {/* Define the paths path1 & path2 */}
           <path id='path1' d={fillPoints} fill='none' stroke={'none'} />
           <path id='path2' d={fillPoints2} fill='none' stroke={'none'} />
 
@@ -1589,7 +1628,7 @@ export const LineChart = (props: LineChartPropsType) => {
     arrowStrokeColor: any,
     arrowFillColor: any,
     hideDataPoints: any,
-    paramsData: any,
+    data: any,
     propsData: any,
     dataPointsShape: any,
     dataPointsWidth: any,
@@ -1603,39 +1642,115 @@ export const LineChart = (props: LineChartPropsType) => {
     isSecondary: any,
     showValuesAsDataPointsText: any,
     key?: number
-  ) =>
-    renderLine(
-      zIndex,
-      points,
-      currentLineThickness,
-      color,
-      fillPoints,
-      startFillColor,
-      endFillColor,
-      startOpacity,
-      endOpacity,
-      strokeDashArray,
-      showArrow,
-      arrowPoints,
-      arrowStrokeWidth,
-      arrowStrokeColor,
-      arrowFillColor,
-      hideDataPoints,
-      paramsData,
-      propsData,
-      dataPointsShape,
-      dataPointsWidth,
-      dataPointsHeight,
-      dataPointsColor,
-      dataPointsRadius,
-      textColor,
-      textFontSize,
-      startIndex,
-      endIndex,
-      isSecondary,
-      showValuesAsDataPointsText,
-      key
+  ) => {
+    return (
+      <animated.div
+        style={{
+          ...svgWrapperViewStyle,
+          width: animatedWidth
+          // left:8,
+        }}
+      >
+        {lineSvgComponent(
+          points,
+          currentLineThickness,
+          color,
+          fillPoints,
+          startFillColor,
+          endFillColor,
+          startOpacity,
+          endOpacity,
+          strokeDashArray,
+          showArrow,
+          arrowPoints,
+          arrowStrokeWidth,
+          arrowStrokeColor,
+          arrowFillColor,
+          key ?? 0,
+          hideDataPoints,
+          data,
+          propsData,
+          dataPointsShape,
+          dataPointsWidth,
+          dataPointsHeight,
+          dataPointsColor,
+          dataPointsRadius,
+          textColor,
+          textFontSize,
+          startIndex,
+          endIndex,
+          isSecondary,
+          showValuesAsDataPointsText
+        )}
+      </animated.div>
     )
+  }
+
+  // const renderAnimatedLine = (
+  //   zIndex: number,
+  //   points: any,
+  //   animatedWidth: any,
+  //   currentLineThickness: number | undefined,
+  //   color: string,
+  //   fillPoints: any,
+  //   startFillColor: string,
+  //   endFillColor: string,
+  //   startOpacity: number,
+  //   endOpacity: number,
+  //   strokeDashArray: Array<number> | undefined | null,
+  //   showArrow: any,
+  //   arrowPoints: any,
+  //   arrowStrokeWidth: any,
+  //   arrowStrokeColor: any,
+  //   arrowFillColor: any,
+  //   hideDataPoints: any,
+  //   paramsData: any,
+  //   propsData: any,
+  //   dataPointsShape: any,
+  //   dataPointsWidth: any,
+  //   dataPointsHeight: any,
+  //   dataPointsColor: any,
+  //   dataPointsRadius: any,
+  //   textColor: any,
+  //   textFontSize: any,
+  //   startIndex: any,
+  //   endIndex: any,
+  //   isSecondary: any,
+  //   showValuesAsDataPointsText: any,
+  //   key?: number
+  // ) =>
+  //   renderLine(
+  //     zIndex,
+  //     points,
+  //     currentLineThickness,
+  //     color,
+  //     fillPoints,
+  //     startFillColor,
+  //     endFillColor,
+  //     startOpacity,
+  //     endOpacity,
+  //     strokeDashArray,
+  //     showArrow,
+  //     arrowPoints,
+  //     arrowStrokeWidth,
+  //     arrowStrokeColor,
+  //     arrowFillColor,
+  //     hideDataPoints,
+  //     paramsData,
+  //     propsData,
+  //     dataPointsShape,
+  //     dataPointsWidth,
+  //     dataPointsHeight,
+  //     dataPointsColor,
+  //     dataPointsRadius,
+  //     textColor,
+  //     textFontSize,
+  //     startIndex,
+  //     endIndex,
+  //     isSecondary,
+  //     showValuesAsDataPointsText,
+  //     key
+  //   )
 
   // const renderAnimatedLine = (
   //   zIndex: number,
@@ -1909,7 +2024,7 @@ export const LineChart = (props: LineChartPropsType) => {
           ? renderAnimatedLine(
               zIndex1,
               points,
-              0, //animatedWidth,
+              widthValue, //0, //animatedWidth,
               thickness1,
               color1,
               fillPoints,
@@ -1976,7 +2091,7 @@ export const LineChart = (props: LineChartPropsType) => {
             ? renderAnimatedLine(
                 secondaryLineConfig.zIndex,
                 secondaryPoints,
-                0, //animatedWidth,
+                widthValue2, //animatedWidth,
                 secondaryLineConfig.thickness,
                 secondaryLineConfig.color.toString(),
                 secondaryFillPoints,
@@ -2044,7 +2159,7 @@ export const LineChart = (props: LineChartPropsType) => {
             ? renderAnimatedLine(
                 zIndex2,
                 points2,
-                0, //animatedWidth2,
+                widthValue3, //animatedWidth2,
                 thickness2,
                 color2,
                 fillPoints2,
@@ -2112,7 +2227,7 @@ export const LineChart = (props: LineChartPropsType) => {
             ? renderAnimatedLine(
                 zIndex3,
                 points3,
-                0, //animatedWidth3,
+                widthValue4, //animatedWidth3,
                 thickness3,
                 color3,
                 fillPoints3,
@@ -2180,7 +2295,7 @@ export const LineChart = (props: LineChartPropsType) => {
             ? renderAnimatedLine(
                 zIndex4,
                 points4,
-                0, //animatedWidth4,
+                widthValue5, //animatedWidth4,
                 thickness4,
                 color4,
                 fillPoints4,
