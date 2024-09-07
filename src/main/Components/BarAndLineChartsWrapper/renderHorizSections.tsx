@@ -87,6 +87,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     getLabelTexts,
     getLabelTextsForSecondaryYAxis
   } = getHorizSectionVals(props)
+
+  const secondaryYAxisExtraHeightAtBottom = 10
+
   const horizSectionsLeft =
     (chartType === chartTypes.BAR
       ? yAxisLabelWidth
@@ -113,7 +116,8 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
           style = {
             ...style,
             borderColor: yAxisColor,
-            backgroundColor: sectionColors?.[invertedIndex] as string ?? backgroundColor,
+            backgroundColor:
+              (sectionColors?.[invertedIndex] as string) ?? backgroundColor,
             width: (props.width || totalWidth - spacing) + endSpacing,
             height: stepHeight,
             marginLeft: yAxisSide === yAxisSides.RIGHT ? 0 : yAxisLabelWidth
@@ -259,17 +263,25 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
             position: 'absolute',
             zIndex: 1,
             bottom:
-              (secondaryYAxisConfig.stepHeight ?? 0) *
-                ((isBelow ? 0 : noOfSectionsBelowXAxis) +
-                  index -
-                  (noOfSectionsBelowXAxis ? 0 : 0.5)) +
+              (index - 0.5) *
+                (isBelow
+                  ? secondaryYAxisConfig.negativeStepHeight ??
+                    secondaryYAxisConfig.stepHeight ??
+                    0
+                  : secondaryYAxisConfig.stepHeight ?? 0) +
+              (isBelow ? secondaryYAxisExtraHeightAtBottom : 0) +
               30,
             width: secondaryYAxisConfig.yAxisLabelWidth,
-            height: secondaryYAxisConfig.stepHeight ?? 0,
-            ...yAxisLabelContainerStyle
+            height: isBelow
+              ? secondaryYAxisConfig.negativeStepHeight ??
+                secondaryYAxisConfig.stepHeight ??
+                0
+              : secondaryYAxisConfig.stepHeight ?? 0,
+            ...(secondaryYAxisConfig.yAxisLabelContainerStyle ??
+              yAxisLabelContainerStyle)
           }}
         >
-          {secondaryYAxisConfig.showYAxisIndices && index !== 0 ? (
+          {secondaryYAxisConfig.showYAxisIndices && (index !== 0 || isBelow) ? (
             <div
               style={{
                 height: secondaryYAxisConfig.yAxisIndicesHeight,
@@ -284,7 +296,14 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
           <div
             // numberOfLines={secondaryYAxisConfig.yAxisTextNumberOfLines}
             // ellipsizeMode={'clip'}
-            style={secondaryYAxisConfig.yAxisTextStyle}
+            style={{
+              textAlign: 'left',
+              width:
+                secondaryYAxisConfig.yAxisLabelContainerStyle?.width ??
+                secondaryYAxisConfig.yAxisLabelWidth,
+              marginLeft: 10,
+              ...secondaryYAxisConfig.yAxisTextStyle
+            }}
           >
             {label}
           </div>
@@ -387,7 +406,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     (width ? width + 20 : totalWidth) +
     yAxisLabelWidth / 2 +
     endSpacing -
-    (chartType === chartTypes.BAR ? 40 : 60);
+    (chartType === chartTypes.BAR ? 40 : 60)
 
   return (
     <>
@@ -471,7 +490,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                             negativeStepHeight / 2,
                           width: yAxisLabelWidth,
                           height:
-                            index === noOfSections ? negativeStepHeight / 2 : negativeStepHeight
+                            index === noOfSections
+                              ? negativeStepHeight / 2
+                              : negativeStepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
                           style.left = leftShiftForRIghtYaxis
@@ -617,7 +638,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                           bottom: negativeStepHeight * (index - 0.5),
                           width: yAxisLabelWidth,
                           height:
-                            index === noOfSections ? negativeStepHeight / 2 : negativeStepHeight
+                            index === noOfSections
+                              ? negativeStepHeight / 2
+                              : negativeStepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
                           style.left = (width ?? totalWidth) + endSpacing
@@ -674,7 +697,35 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                 {!secondaryYAxisConfig.hideYAxisText
                   ? renderSecondaryYaxisLabels(secondaryHorizSections, false)
                   : null}
-                {noOfSectionsBelowXAxis && !secondaryYAxisConfig.hideYAxisText
+              </div>
+            ) : null
+          }
+          {
+            /***********************************************************************************************/
+            /*************************      Render the secondary Y Axis below origin   *********************/
+            /***********************************************************************************************/
+
+            secondaryYAxisConfig.noOfSectionsBelowXAxis ? (
+              <div
+                style={{
+                  width:
+                    secondaryYAxisConfig.yAxisLabelWidth ?? yAxisLabelWidth,
+                  left:
+                    (width ? yAxisLabelWidth : yAxisLabelWidth - spacing) -
+                    (secondaryYAxisConfig.yAxisLabelWidth ?? yAxisLabelWidth),
+                  borderColor: secondaryYAxisConfig.yAxisColor?.toString(),
+                  borderLeftWidth: secondaryYAxisConfig.yAxisThickness,
+                  height:
+                    (secondaryYAxisConfig.negativeStepHeight ??
+                      secondaryYAxisConfig.stepHeight ??
+                      stepHeight) *
+                      secondaryHorizSectionsBelow.length +
+                    secondaryYAxisExtraHeightAtBottom,
+                  bottom:
+                    -containerHeight - stepHeight / 2 - yAxisExtraHeightAtTop
+                }}
+              >
+                {!secondaryYAxisConfig.hideYAxisText
                   ? renderSecondaryYaxisLabels(
                       secondaryHorizSectionsBelow,
                       true

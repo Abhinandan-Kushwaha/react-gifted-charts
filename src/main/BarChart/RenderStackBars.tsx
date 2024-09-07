@@ -258,7 +258,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
                   : barBackgroundPattern?.()}
               </defs>
               <rect
-                stroke='transparent'
+                stroke='none'
                 x='1'
                 y='1'
                 width='100%'
@@ -299,7 +299,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
             })()}
           >
             {showValuesAsTopLabel ? (
-              <div style={item.topLabelTextStyle}>
+              <div style={item.topLabelTextStyle ?? props.topLabelTextStyle}>
                 {item.stacks.reduce((acc, stack) => acc + stack.value, 0)}
               </div>
             ) : (

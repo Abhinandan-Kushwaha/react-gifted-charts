@@ -52,6 +52,10 @@ export const PieChartMain = (props: PieChartMainProps) => {
     getExternaLabelProperties
   } = getPieChartMainProps(props)
 
+  let prevSide = 'right'
+  let prevLabelComponentX = 0
+  let wasFirstItemOnPole = false
+
   let containerStyle: React.CSSProperties = {
     backgroundColor: backgroundColor.toString(),
     height: semiCircle
@@ -256,8 +260,23 @@ export const PieChartMain = (props: PieChartMainProps) => {
               outY,
               finalX,
               labelComponentX,
-              localExternalLabelComponent
-            } = getExternaLabelProperties(item, mx, my, cx, cy)
+              labelComponentY,
+              localExternalLabelComponent,
+              isRightHalf
+            } = getExternaLabelProperties(
+              item,
+              mx,
+              my,
+              cx,
+              cy,
+              prevSide,
+              prevLabelComponentX,
+              index === data.length - 1, // isLast
+              wasFirstItemOnPole
+            )
+            prevSide = isRightHalf ? 'right' : 'left'
+            prevLabelComponentX = labelComponentX
+            if (index === 0) wasFirstItemOnPole = labelComponentY !== outY
 
             return (
               <React.Fragment key={index}>
@@ -282,7 +301,7 @@ export const PieChartMain = (props: PieChartMainProps) => {
                     {localExternalLabelComponent ? (
                       <g
                         x={labelComponentX}
-                        y={outY + labelComponentHeight / 2}
+                        y={labelComponentY + labelComponentHeight / 2}
                       >
                         {localExternalLabelComponent?.(item, index) ?? null}
                       </g>

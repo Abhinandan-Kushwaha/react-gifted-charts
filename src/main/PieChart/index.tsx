@@ -125,6 +125,7 @@ export const PieChart = (props: PieChartPropsType) => {
               position: 'absolute',
               top: -extraRadius,
               left: -extraRadius,
+              // zIndex: -1,
               pointerEvents: 'none'
             }}>
             <PieChartMain
