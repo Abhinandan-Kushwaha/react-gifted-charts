@@ -7,7 +7,7 @@
     "dist"
   ],
   "dependencies": {
-    "gifted-charts-core": "^0.1.29"
+    "gifted-charts-core": "^0.1.34"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.7",

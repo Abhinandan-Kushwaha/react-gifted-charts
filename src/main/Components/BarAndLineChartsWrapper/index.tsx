@@ -228,7 +228,7 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
               ) : null
             })
         }
-        {renderChartContent()}
+        {renderChartContent(containerHeightIncludingBelowXAxis)}
       </div>
       {referenceLinesOverChartContent
         ? renderHorizSections({
