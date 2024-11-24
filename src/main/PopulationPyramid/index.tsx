@@ -96,7 +96,8 @@ export const PopulationPyramid = (props: PopulationPyramidPropsTypeReactJS) => {
     xAxisIndicesCommonProps,
     verticalLinesCommonProps,
     xAxisLabelsCommonProps,
-    getXLabel
+    getXLabel,
+    midAxisLabelWidth
   } = usePopulationPyramid({
     ...props,
     screenWidth: 300,
@@ -226,7 +227,10 @@ export const PopulationPyramid = (props: PopulationPyramidPropsTypeReactJS) => {
         {/**************     X-Axis Labels Right     ************/}
         {Array.from(Array(xAxisNoOfSections)).map((item, index) => {
           if (!index && !showMidAxis) return null
-          const x = leftXAfterMid + (leftXAfterMid * index) / xAxisNoOfSections
+          const x =
+            midAxisLabelWidth +
+            leftXAfterMid +
+            (leftXAfterMid * index) / xAxisNoOfSections
           const unformattedXLabel = getXLabel(index)
           const xLabel = formatXAxisLabels
             ? formatXAxisLabels(unformattedXLabel)
@@ -364,6 +368,7 @@ export const PopulationPyramid = (props: PopulationPyramidPropsTypeReactJS) => {
                   item.leftBarBorderColor ?? leftBarBorderColor
                 ).toString()}
                 strokeWidth={leftBorderWidth}
+                onClick={() => props.onLeftPress?.(item, index)}
               />
               <clipPath id={'cp-left' + index}>
                 <rect {...leftBarCommonProps} />
@@ -438,6 +443,7 @@ export const PopulationPyramid = (props: PopulationPyramidPropsTypeReactJS) => {
                   item.rightBarBorderColor ?? rightBarBorderColor
                 ).toString()}
                 strokeWidth={rightBorderWidth}
+                onCanPlay={() => props.onRightPress?.(item, index)}
               />
               <clipPath id={'cp-right' + index}>
                 <rect {...rightBarCommonProps} />

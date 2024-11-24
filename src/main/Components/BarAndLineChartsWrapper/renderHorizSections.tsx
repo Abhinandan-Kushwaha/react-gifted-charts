@@ -11,6 +11,8 @@ import {
 
 interface IhorizSectionPropTypes extends horizSectionPropTypes {
   chartType: chartTypes
+  containerHeightIncludingBelowXAxis: number
+  hasNegative: boolean
 }
 
 export const renderHorizSections = (props: IhorizSectionPropTypes) => {
@@ -56,6 +58,8 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
     rtl,
 
     containerHeight,
+    containerHeightIncludingBelowXAxis,
+    hasNegative,
     maxValue,
     yAxisOffset,
 
@@ -89,6 +93,12 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
   } = getHorizSectionVals(props)
 
   const secondaryYAxisExtraHeightAtBottom = 10
+
+  const negativeSectionsCountDiffPrimaryVsSecondary =
+    secondaryHorizSectionsBelow.length - horizSectionsBelow.length
+
+  const isLineChart = chartType === chartTypes.LINE
+  const isLineBiColor = chartType === chartTypes.LINE_BI_COLOR
 
   const horizSectionsLeft =
     (chartType === chartTypes.BAR
@@ -269,9 +279,14 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                     secondaryYAxisConfig.stepHeight ??
                     0
                   : secondaryYAxisConfig.stepHeight ?? 0) +
-              (isBelow ? secondaryYAxisExtraHeightAtBottom : 0) +
-              30,
+              30 +
+              (isBelow
+                ? secondaryYAxisExtraHeightAtBottom + stepHeight * -1.5
+                : containerHeightIncludingBelowXAxis -
+                  containerHeight -
+                  stepHeight / 2),
             width: secondaryYAxisConfig.yAxisLabelWidth,
+            // backgroundColor:'red',
             height: isBelow
               ? secondaryYAxisConfig.negativeStepHeight ??
                 secondaryYAxisConfig.stepHeight ??
@@ -322,7 +337,11 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               bottom:
                 ((referenceLine1Position - (yAxisOffset ?? 0)) *
                   containerHeight) /
-                maxValue,
+                  maxValue +
+                25 +
+                (hasNegative
+                  ? containerHeightIncludingBelowXAxis - containerHeight - 8
+                  : 0),
               left:
                 yAxisSide === yAxisSides.RIGHT
                   ? 0
@@ -350,7 +369,11 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               bottom:
                 ((referenceLine2Position - (yAxisOffset ?? 0)) *
                   containerHeight) /
-                maxValue,
+                  maxValue +
+                25 +
+                (hasNegative
+                  ? containerHeightIncludingBelowXAxis - containerHeight - 8
+                  : 0),
               left:
                 yAxisSide === yAxisSides.RIGHT
                   ? 0
@@ -376,9 +399,13 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               position: 'absolute',
               zIndex: referenceLine3Config.zIndex,
               bottom:
-                ((referenceLine3Position - (yAxisOffset ?? 0)) *
+                ((referenceLine1Position - (yAxisOffset ?? 0)) *
                   containerHeight) /
-                maxValue,
+                  maxValue +
+                25 +
+                (hasNegative
+                  ? containerHeightIncludingBelowXAxis - containerHeight - 8
+                  : 0),
               left:
                 yAxisSide === yAxisSides.RIGHT
                   ? 0
@@ -403,10 +430,109 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
   }
 
   const leftShiftForRIghtYaxis =
-    (width ? width + 20 : totalWidth) +
+    (width ? width + (isLineChart ? 50 : 20) : totalWidth) +
     yAxisLabelWidth / 2 +
     endSpacing -
-    (chartType === chartTypes.BAR ? 40 : 60)
+    (isLineChart ? 70 : 40)
+
+  const horizSectionsBelowRenderer = (index: number, showBorder: boolean) => {
+    // negative sections height will correspond to negative Y-axis config in case there are extra negative horiz sections corresponding to the secondary Y axis
+    const localNegativeStepHeight = !showBorder
+      ? secondaryYAxisConfig.negativeStepHeight ?? negativeStepHeight
+      : negativeStepHeight
+
+    return (
+      <div
+        key={index}
+        style={(() => {
+          const style: React.CSSProperties = {
+            ...styles.horizBar,
+            width: width ? width + 15 : totalWidth,
+            marginLeft: isLineChart && yAxisSide !== yAxisSides.RIGHT ? 29 : 0
+          }
+          // if (index === 0) {
+          //   style.marginTop = negativeStepHeight / 2
+          // }
+          return style
+        })()}
+      >
+        <div
+          style={(() => {
+            let style: React.CSSProperties = {
+              ...styles.leftLabel,
+              borderRightWidth: yAxisThickness,
+              borderRightStyle: 'solid',
+              borderColor: yAxisColor,
+              marginLeft: yAxisThickness - 1,
+              height: localNegativeStepHeight,
+              // width: yAxisLabelWidth,
+              transform: `translateX(${
+                yAxisSide === yAxisSides.RIGHT
+                  ? (width ?? totalWidth) + endSpacing - (isLineChart ? 50 : 20)
+                  : horizSectionsLeft
+              }px)`
+            }
+            // if(yAxisSide===yAxisSides.LEFT){
+            //   style={...style,
+            //     borderLeftWidth: yAxisThickness,
+            //     borderLeftStyle: 'solid',
+            //     borderColor: yAxisColor,}
+            // }
+            // else{
+            //   style={...style,
+            //     borderRightWidth: yAxisThickness,
+            //     borderRightStyle: 'solid',
+            //     borderColor: yAxisColor,}
+            // }
+            return style
+          })()}
+        />
+        <div
+          style={{
+            ...styles.leftLabel,
+            // width: yAxisLabelWidth,
+            transform: `translateX(${
+              yAxisSide === yAxisSides.RIGHT ? 0 : horizSectionsLeft
+            }px)`,
+            display: 'flex',
+            alignItems: 'flex-end',
+            ...yAxisLabelContainerStyle
+          }}
+        >
+          {hideRules ? null : (
+            <Rule
+              config={{
+                thickness: rulesThickness,
+                color: rulesColor,
+                width:
+                  rulesLength ||
+                  (props.width || totalWidth - spacing) + endSpacing,
+                dashWidth: dashWidth,
+                dashGap: dashGap,
+                type: rulesType
+              }}
+            />
+          )}
+          {showYAxisIndices && index !== noOfSections ? (
+            <div
+              style={{
+                position: 'absolute',
+                height: yAxisIndicesHeight,
+                width: yAxisIndicesWidth,
+                left:
+                  yAxisIndicesWidth / -2 +
+                  (yAxisSide === yAxisSides.RIGHT
+                    ? (width ?? totalWidth) + endSpacing
+                    : 0),
+                marginTop: -yAxisIndicesHeight - 3, // added
+                backgroundColor: yAxisIndicesColor
+              }}
+            />
+          ) : null}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -432,7 +558,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
           <div
             style={{
               position: 'relative',
-              width: (width ?? totalWidth) + endSpacing
+              width: (width ?? totalWidth) + endSpacing + yAxisLabelWidth
             }}
           >
             {yAxisExtraHeightAtTop ? renderExtraHeightOfYAxisAtTop() : null}
@@ -510,8 +636,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                         // numberOfLines={yAxisTextNumberOfLines}
                         // ellipsizeMode={'clip'}
                         style={(() => {
-                          const style: React.CSSProperties =
-                            { ...yAxisTextStyle } ?? {}
+                          const style: React.CSSProperties = {
+                            ...yAxisTextStyle
+                          }
                           if (horizontal) {
                             style.transform = `rotate(${
                               rotateYAxisTexts ?? (rtl ? 90 : -90)
@@ -532,86 +659,21 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               /***********************************************************************************************/
             }
 
-            {horizSectionsBelow.map((sectionItems, index) => {
-              return (
-                <div
-                  key={index}
-                  style={(() => {
-                    const style: React.CSSProperties = {
-                      ...styles.horizBar,
-                      width: width ? width + 15 : totalWidth
-                    }
-                    // if (index === 0) {
-                    //   style.marginTop = negativeStepHeight / 2
-                    // }
-                    return style
-                  })()}
-                >
-                  <div
-                    style={(() => {
-                      const style: React.CSSProperties = {
-                        ...styles.leftLabel,
-                        borderRightWidth: yAxisThickness,
-                        borderRightStyle: 'solid',
-                        borderColor: yAxisColor,
-                        marginLeft: yAxisThickness - 1,
-                        height: negativeStepHeight,
-                        width: yAxisLabelWidth,
-                        transform: `translateX(${
-                          yAxisSide === yAxisSides.RIGHT
-                            ? (width ?? totalWidth) + endSpacing
-                            : horizSectionsLeft
-                        }px)`
-                      }
-                      return style
-                    })()}
-                  />
-                  <div
-                    style={{
-                      ...styles.leftLabel,
-                      // width: yAxisLabelWidth,
-                      transform: `translateX(${
-                        yAxisSide === yAxisSides.RIGHT ? 0 : horizSectionsLeft
-                      }px)`,
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      ...yAxisLabelContainerStyle
-                    }}
-                  >
-                    {hideRules ? null : (
-                      <Rule
-                        config={{
-                          thickness: rulesThickness,
-                          color: rulesColor,
-                          width:
-                            rulesLength ||
-                            (props.width || totalWidth - spacing) + endSpacing,
-                          dashWidth: dashWidth,
-                          dashGap: dashGap,
-                          type: rulesType
-                        }}
-                      />
-                    )}
-                    {showYAxisIndices && index !== noOfSections ? (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          height: yAxisIndicesHeight,
-                          width: yAxisIndicesWidth,
-                          left:
-                            yAxisIndicesWidth / -2 +
-                            (yAxisSide === yAxisSides.RIGHT
-                              ? (width ?? totalWidth) + endSpacing
-                              : 0),
-                          marginTop: -yAxisIndicesHeight - 3, // added
-                          backgroundColor: yAxisIndicesColor
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                </div>
-              )
-            })}
+            {horizSectionsBelow.map((_, index) =>
+              horizSectionsBelowRenderer(index, true)
+            )}
+
+            {
+              /***********************************************************************************************/
+              /*     If more -ve sections in Secondary Y-axis, then we need to render the Rules for them     */
+              /***********************************************************************************************/
+
+              secondaryYAxis && negativeSectionsCountDiffPrimaryVsSecondary > 0
+                ? [
+                    ...Array(negativeSectionsCountDiffPrimaryVsSecondary).keys()
+                  ].map((_, index) => horizSectionsBelowRenderer(index, false))
+                : null
+            }
 
             {
               /***********************************************************************************************/
@@ -621,8 +683,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               !hideYAxisText &&
                 horizSectionsBelow.map((sectionItems, index) => {
                   let label = getLabelTexts(
-                    horizSectionsBelow[horizSectionsBelow.length - 1 - index]
-                      .value,
+                    horizSectionsBelow[index].value,
                     index
                   )
                   return (
@@ -635,7 +696,10 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
 
                           position: 'absolute',
                           zIndex: 1,
-                          bottom: negativeStepHeight * (index - 0.5),
+                          top:
+                            containerHeight +
+                            stepHeight / 2 +
+                            negativeStepHeight * (index + 0.5),
                           width: yAxisLabelWidth,
                           height:
                             index === noOfSections
@@ -643,8 +707,14 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                               : negativeStepHeight
                         }
                         if (yAxisSide === yAxisSides.RIGHT) {
-                          style.left = (width ?? totalWidth) + endSpacing
+                          style.left =
+                            (width
+                              ? width - 15
+                              : totalWidth - (isLineChart ? 65 : 35)) +
+                            yAxisLabelWidth / 2 +
+                            10 // or maybe yAxislabelWidth here
                         }
+
                         style = { ...style, ...yAxisLabelContainerStyle }
                         return style
                       })()}
@@ -653,8 +723,9 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
                         // numberOfLines={yAxisTextNumberOfLines}
                         // ellipsizeMode={'clip'}
                         style={(() => {
-                          const style: React.CSSProperties =
-                            { ...yAxisTextStyle } ?? {}
+                          const style: React.CSSProperties = {
+                            ...yAxisTextStyle
+                          }
                           if (index === noOfSections) {
                             style.marginBottom = negativeStepHeight / -2
                           }
@@ -684,9 +755,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
               <div
                 style={{
                   width: secondaryYAxisConfig.yAxisLabelWidth,
-                  marginLeft: width
-                    ? yAxisLabelWidth
-                    : yAxisLabelWidth - spacing,
+                  marginLeft: width ? 0 : -spacing,
                   borderColor: secondaryYAxisConfig.yAxisColor?.toString(),
                   borderLeftWidth: secondaryYAxisConfig.yAxisThickness,
                   borderLeftStyle: 'solid',
@@ -708,21 +777,25 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
             secondaryYAxisConfig.noOfSectionsBelowXAxis ? (
               <div
                 style={{
+                  position: 'absolute',
                   width:
                     secondaryYAxisConfig.yAxisLabelWidth ?? yAxisLabelWidth,
                   left:
-                    (width ? yAxisLabelWidth : yAxisLabelWidth - spacing) -
-                    (secondaryYAxisConfig.yAxisLabelWidth ?? yAxisLabelWidth),
+                    (width ?? totalWidth) +
+                    yAxisLabelWidth -
+                    (isLineChart ? 30 : 0),
+                  // (width ? yAxisLabelWidth : yAxisLabelWidth - spacing) -
+                  // (secondaryYAxisConfig.yAxisLabelWidth ?? yAxisLabelWidth),
                   borderColor: secondaryYAxisConfig.yAxisColor?.toString(),
                   borderLeftWidth: secondaryYAxisConfig.yAxisThickness,
+                  borderLeftStyle: 'solid',
                   height:
                     (secondaryYAxisConfig.negativeStepHeight ??
                       secondaryYAxisConfig.stepHeight ??
                       stepHeight) *
                       secondaryHorizSectionsBelow.length +
                     secondaryYAxisExtraHeightAtBottom,
-                  bottom:
-                    -containerHeight - stepHeight / 2 - yAxisExtraHeightAtTop
+                  top: containerHeight + stepHeight / 2
                 }}
               >
                 {!secondaryYAxisConfig.hideYAxisText

@@ -34,7 +34,14 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     stackBorderTopRightRadius,
     stackBorderBottomLeftRadius,
     stackBorderBottomRightRadius,
-    showValuesAsTopLabel
+    showValuesAsTopLabel,
+    autoShiftLabelsForNegativeStacks = true,
+    labelsDistanceFromXaxis = 0,
+    secondaryStepHeight,
+    secondaryStepValue,
+    secondaryNegativeStepHeight,
+    secondaryNegativeStepValue,
+    containerHeightIncludingBelowXAxis
   } = props
   const {
     containsNegativeValue,
@@ -55,13 +62,23 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     lowestBarPosition,
     getStackBorderRadii,
     tooltipProps
-  } = useRenderStackBars(props)
+  } = useRenderStackBars({
+    ...props,
+    secondaryStepHeight,
+    secondaryStepValue,
+    secondaryNegativeStepHeight,
+    secondaryNegativeStepValue
+  })
 
   const prevAndCurrentSpacing =
     (item.spacing ?? spacing) + (stackData[index - 1]?.spacing ?? spacing)
   const labelWidth =
     (item.stacks[0].barWidth || props.barWidth || 30) +
     prevAndCurrentSpacing / 2
+
+  const fourthQuadrantHeight =
+    (containerHeightIncludingBelowXAxis ?? containerHeight ?? 200) -
+    (containerHeight ?? 200)
 
   const renderLabel = (label: String, labelTextStyle: any) => {
     return (
@@ -73,7 +90,11 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
               prevAndCurrentSpacing / -4 + (rotateLabel ? labelWidth / 6 : 0),
             position: 'absolute',
             left: leftSpacing,
-            bottom: (rotateLabel ? labelWidth / -2 + 18 : 6) + 40
+            bottom:
+              fourthQuadrantHeight -
+              40 -
+              xAxisTextNumberOfLines * 18 +
+              (autoShiftLabelsForNegativeStacks ? lowestBarPosition : 0) //(rotateLabel ? labelWidth / -2 - 26 : -10)
           }
           if (rotateLabel) {
             if (props.horizontal) {
@@ -181,6 +202,10 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
               stackBorderBottomRightRadius ??
               stackBorderRadius,
             overflow: lowestBarPosition ? 'visible' : 'hidden'
+            // transform: `translateY(${
+            //   (containerHeight || 200) -
+            //   (totalHeight + 10 + xAxisLabelsVerticalShift)
+            // }px)`
           }}
         >
           {item.stacks.map((stackItem, index) => {
@@ -263,6 +288,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
                 y='1'
                 width='100%'
                 height='100%'
+                // height={totalHeight}
                 fill={`url(#${item.patternId || patternId})`}
               />
             </svg>
@@ -300,7 +326,10 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
           >
             {showValuesAsTopLabel ? (
               <div style={item.topLabelTextStyle ?? props.topLabelTextStyle}>
-                {item.stacks.reduce((acc, stack) => acc + stack.value, 0)}
+                {stackData[index].stacks.reduce(
+                  (acc, stack) => acc + stack.value,
+                  0
+                )}
               </div>
             ) : (
               item.topLabelComponent?.()

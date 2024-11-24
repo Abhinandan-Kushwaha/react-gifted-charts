@@ -16,7 +16,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
   const {
     barBackgroundPattern,
     patternId,
-    barWidth,
+    barWidth: bWidth,
     barStyle,
     item,
     index,
@@ -38,12 +38,12 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
   } = props
   const [height, setHeight] = useState(noAnimation ? props.height : 0.4)
   // const [initialRender, setInitialRender] = useState(noAnimation ? false : true)
+  const [barWidth, setBarWidth] = useState(item.barWidth ?? bWidth) // setting width in state for animation purpose
 
   useEffect(() => {
     if (!noAnimation) {
       setHeight(props.height)
-    }
-    else {
+    } else {
       setHeight(props.height)
     }
   }, [props.height])
@@ -56,7 +56,11 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
   //       elevate();
   //     }
   //   }
-  // }, [props.height]);
+  //   else {
+  //     setHeight(props.height);
+  //     setBarWidth(item.barWidth ?? bWidth);
+  //   }
+  // }, [props.height, bWidth, item.barWidth]);
 
   // const elevate = () => {
   //   LayoutAnimation.configureNext({
@@ -64,6 +68,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
   //     update: {type: 'linear', property: 'scaleXY'},
   //   });
   //   setHeight(props.height);
+  //   setBarWidth(item.barWidth ?? bWidth);
   // };
 
   // const layoutAppear = () => {
@@ -83,7 +88,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
           let style: React.CSSProperties = {
             position: 'absolute',
             bottom: 0,
-            width: item.barWidth ?? props.barWidth ?? 30,
+            width: barWidth,
             overflow: 'hidden',
             transition: `height ${animationDuration / 1000}s`,
             height:
@@ -92,7 +97,9 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
                 : height) - (barMarginBottom || 0)
           }
           if (item.value < 0) {
-            style.transform = `rotate(180deg) translateY(${-props.height}px)`
+            style.transform = `rotate(180deg) translateY(${
+              -props.height - 1
+            }px)`
           }
 
           if (noGradient) {
