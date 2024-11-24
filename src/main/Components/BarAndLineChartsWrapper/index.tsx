@@ -8,6 +8,7 @@ import {
   useBarAndLineChartsWrapper
 } from 'gifted-charts-core'
 import './styles.css'
+import RenderLineInBarChart from './renderLineInBarChart'
 
 const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
   const {
@@ -51,7 +52,7 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
 
     onEndReached,
     onStartReached,
-    extraWidthDueToDataPoint = 0, // extraWidthDueToDataPoint will be receved from props onlhy in case of LineCharts, for other charts it will be undefined and will default to 0
+    extraWidthDueToDataPoint = 0 // extraWidthDueToDataPoint will be receved from props onlhy in case of LineCharts, for other charts it will be undefined and will default to 0
   } = props
 
   const {
@@ -100,7 +101,10 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
       20 -
       overflowTop,
     marginTop: trimYAxisAtTop ? containerHeight / 20 : 0,
-    marginBottom: (xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18) - 20 //This is to not let the Things that should be rendered below the chart overlap with it
+    marginBottom:
+      (xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18) -
+      20 -
+      xAxisLabelsVerticalShift //This is to not let the Things that should be rendered below the chart overlap with it
   }
 
   if (horizontal) {
@@ -113,14 +117,18 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
 
   // return <div>Hello</div>
 
+  const hasNegative = data.some((item) => item.value < 0)
+
   return (
     <div style={container}>
       {hideAxesAndRules !== true
         ? renderHorizSections({
             ...horizSectionProps,
             onlyReferenceLines: false,
+            containerHeightIncludingBelowXAxis,
             renderReferenceLines: !referenceLinesOverChartContent,
-            chartType
+            chartType,
+            hasNegative
           })
         : null}
       <div
@@ -149,7 +157,9 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
           }
           if (horizontal) {
             style.width =
-              (props.width ?? totalWidth) + (props.width ? endSpacing : -20) + extraWidthDueToDataPoint
+              (props.width ?? totalWidth) +
+              (props.width ? endSpacing : -20) +
+              extraWidthDueToDataPoint
           }
           return style
         })()}
@@ -200,13 +210,13 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         ) : null}
         {
           // Only For Bar Charts-
-          // showLine ? <RenderLineInBarChart {...lineInBarChartProps} /> : null
+          showLine ? <RenderLineInBarChart {...lineInBarChartProps} /> : null
         }
         {
           // Only For Bar Charts-
-          // showLine && points2?.length ? (
-          //   <RenderLineInBarChart {...lineInBarChartProps2} />
-          // ) : null
+          showLine && points2?.length ? (
+            <RenderLineInBarChart {...lineInBarChartProps2} />
+          ) : null
         }
         {
           // Only For Line Charts-
@@ -234,7 +244,9 @@ const BarAndLineChartsWrapper = (props: BarAndLineChartsWrapperTypes) => {
         ? renderHorizSections({
             ...horizSectionProps,
             onlyReferenceLines: true,
-            chartType
+            containerHeightIncludingBelowXAxis,
+            chartType,
+            hasNegative
           })
         : null}
     </div>

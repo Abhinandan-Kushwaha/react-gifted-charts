@@ -97,7 +97,7 @@ export const PieChartPro = (props: PieChartPropsType) => {
                   d={dFinal[index]}
                   fill={
                     ring
-                      ? 'transparent'
+                      ? 'none'
                       : showGradient
                       ? `url(#grad${index})`
                       : data[index].color || pieColors[index % 9]

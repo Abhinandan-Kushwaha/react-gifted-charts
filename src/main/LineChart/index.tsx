@@ -7,7 +7,7 @@ import React, {
   useState
 } from 'react'
 import { styles } from './styles'
-import { screenWidth } from '../utils'
+import { screenWidth, usePrevious } from '../utils'
 import {
   getSegmentedPathObjects,
   getRegionPathObjects,
@@ -30,6 +30,8 @@ import { animated, useSpring } from '@react-spring/web'
 
 // let initialData: Array<lineDataItem> | null = null;
 // let animations: Array<Animated.Value> = [];
+
+let prevPoints = ''
 
 export const LineChart = (props: LineChartPropsType) => {
   const scrollRef = useRef(null)
@@ -277,6 +279,13 @@ export const LineChart = (props: LineChartPropsType) => {
     hidePointer3,
     hidePointer4,
     hidePointer5,
+    cumulativeSpacing1,
+    cumulativeSpacing2,
+    cumulativeSpacing3,
+    cumulativeSpacing4,
+    cumulativeSpacing5,
+    cumulativeSpacingSecondary,
+    cumulativeSpacingForSet,
     hideSecondaryPointer,
     pointerEvents,
     focusEnabled,
@@ -299,6 +308,7 @@ export const LineChart = (props: LineChartPropsType) => {
     barAndLineChartsWrapperProps,
     areaChart,
     mostNegativeValue
+    // oldPoints
   } = useLineChart({ ...props, parentWidth: props.parentWidth ?? screenWidth })
 
   const { secondaryXAxis, intersectionAreaConfig } = props
@@ -503,12 +513,7 @@ export const LineChart = (props: LineChartPropsType) => {
       containerHeightIncludingBelowXAxis +
       (props.overflowBottom ?? dataPointsRadius1),
     left: 0,
-    bottom:
-      72 +
-      xAxisLabelsVerticalShift +
-      labelsExtraHeight -
-      xAxisThickness -
-      (props.overflowBottom ?? dataPointsRadius1),
+    bottom: 73 + xAxisLabelsVerticalShift + labelsExtraHeight - xAxisThickness,
     zIndex: 1,
     overflow: 'hidden'
   }
@@ -618,7 +623,8 @@ export const LineChart = (props: LineChartPropsType) => {
     startIndex: any,
     endIndex: any,
     isSecondary: any,
-    showValuesAsDataPointsText: any
+    showValuesAsDataPointsText: any,
+    spacingArray: number[]
   ) => {
     const getYOrSecondaryY = isSecondary ? getSecondaryY : getY
     return dataForRender.map((item: lineDataItem, index: number) => {
@@ -653,9 +659,9 @@ export const LineChart = (props: LineChartPropsType) => {
         dataPointsColor =
           item.focusedDataPointColor || props.focusedDataPointColor || 'orange'
         dataPointsRadius =
-          item.focusedDataPointRadius ||
-          props.focusedDataPointRadius ||
-          item.dataPointRadius ||
+          item.focusedDataPointRadius ??
+          props.focusedDataPointRadius ??
+          item.dataPointRadius ??
           dataPtsRadius
         if (showTextOnFocus) {
           text = item.dataPointText
@@ -672,7 +678,7 @@ export const LineChart = (props: LineChartPropsType) => {
         dataPointsWidth = item.dataPointWidth || dataPtsWidth
         dataPointsHeight = item.dataPointHeight || dataPtsHeight
         dataPointsColor = item.dataPointColor || dataPtsColor
-        dataPointsRadius = item.dataPointRadius || dataPtsRadius
+        dataPointsRadius = item.dataPointRadius ?? dataPtsRadius
         if (showTextOnFocus) {
           text = ''
         }
@@ -765,7 +771,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 <Fragment key={index}>
                   {customDataPoint ? null : (
                     <rect
-                      x={getX(index) - dataPointsWidth / 2}
+                      x={getX(spacingArray, index) - dataPointsWidth / 2}
                       y={getYOrSecondaryY(item.value) - dataPointsHeight / 2}
                       width={dataPointsWidth}
                       height={dataPointsHeight}
@@ -790,7 +796,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 <Fragment key={index}>
                   {customDataPoint ? null : (
                     <circle
-                      cx={getX(index)}
+                      cx={getX(spacingArray, index)}
                       cy={getYOrSecondaryY(item.value)}
                       r={dataPointsRadius}
                       fill={
@@ -850,7 +856,7 @@ export const LineChart = (props: LineChartPropsType) => {
                     fill={item.textColor || textColor}
                     fontSize={item.textFontSize || textFontSize}
                     x={
-                      getX(index) -
+                      getX(spacingArray, index) -
                       dataPointsWidth +
                       (item.textShiftX || props.textShiftX || 0)
                     }
@@ -873,10 +879,13 @@ export const LineChart = (props: LineChartPropsType) => {
     })
   }
 
-  const renderSpecificVerticalLines = (dataForRender: any) => {
+  const renderSpecificVerticalLines = (
+    dataForRender: any,
+    spacingArray: number[]
+  ) => {
     return dataForRender.map((item: lineDataItem, index: number) => {
       if (item.showVerticalLine) {
-        const x = getX(index)
+        const x = getX(spacingArray, index)
         return (
           <line
             key={index}
@@ -1036,9 +1045,13 @@ export const LineChart = (props: LineChartPropsType) => {
       scrollX,
       pointerEvents,
       width: totalWidth,
-      screenWidth,
+      screenWidth:
+        props.width ??
+        Math.min(totalWidth, props.parentWidth ?? screenWidth) -
+          yAxisLabelWidth,
       hasDataSet: !!dataSet,
-      containsNegative: mostNegativeValue < 0
+      containsNegative: mostNegativeValue < 0,
+      horizontalStripConfig: pointerConfig?.horizontalStripConfig
     })
   }
 
@@ -1128,6 +1141,12 @@ export const LineChart = (props: LineChartPropsType) => {
     )
   }
 
+  // const oldPoints = usePrevious(points);
+  // const oldFillPoints = usePrevious(fillPoints);
+
+  // console.log('oldPoints---->>>>',oldPoints)
+  // console.log('points............',points)
+
   const lineSvgComponent = (
     points: any,
     currentLineThickness: number | undefined,
@@ -1157,8 +1176,21 @@ export const LineChart = (props: LineChartPropsType) => {
     startIndex: any,
     endIndex: any,
     isSecondary: any,
-    showValuesAsDataPointsText: any
+    showValuesAsDataPointsText: any,
+    spacingArray: number[]
   ) => {
+    // console.log('oldPoints---->', oldPoints)
+    // console.log('points---->', points)
+    // console.log(' = ',oldPoints === points)
+    // const shouldAnimate = animateOnDataChange && prevPoints
+
+    //   const animatedTag = <animate
+    //   dur="1s"
+    //   attributeName='d'
+    //   values={`${oldPoints};${points}`}
+    //   fill='freeze'
+    // />
+
     if (!points) return null
     const uniqueGradientKey = (key ?? -1).toString() + Math.random()
     const isNthAreaChart = getIsNthAreaChart(key ?? 0)
@@ -1238,7 +1270,14 @@ export const LineChart = (props: LineChartPropsType) => {
             return <path key={index} {...lineSvgProps} />
           })
         ) : (
-          <path {...lineSvgPropsOuter} />
+          <path {...lineSvgPropsOuter} d={points}>
+            <animate
+              id={Math.random().toString()}
+              dur='1s'
+              attributeName='d'
+              values={`${points};${'M9 160 L31 166.66666666666666 L53 196.66666666666666 L75 210 L97 233.33333333333334 L119 230 L141 240 L163 206.66666666666666 L185 136.66666666666669 L207 166.66666666666666 L229 160 L251 196.66666666666666 L273 216.66666666666666 L295 206.66666666666666 L317 166.66666666666666 L339 160 L361 196.66666666666666 L383 133.33333333333331 L405 160'}`}
+            />
+          </path>
         )}
 
         {/***********************      For Area Chart        ************/}
@@ -1265,18 +1304,28 @@ export const LineChart = (props: LineChartPropsType) => {
               }
               stroke={'none'}
               strokeWidth={currentLineThickness || thickness}
-            />
+            >
+              {/* {oldFillPoints&&animateOnDataChange ? (
+              <animate
+                dur={`${animationDuration/1000}s`}
+                attributeName='d'
+                values={`${oldFillPoints};${fillPoints}`}
+              />
+            ) : null} */}
+            </path>
           ))}
 
         {/******************************************************************/}
 
-        {renderSpecificVerticalLines(data)}
-        {renderSpecificVerticalLines(data2)}
-        {renderSpecificVerticalLines(data3)}
-        {renderSpecificVerticalLines(data4)}
-        {renderSpecificVerticalLines(data5)}
+        {renderSpecificVerticalLines(data, cumulativeSpacing1)}
+        {renderSpecificVerticalLines(data2, cumulativeSpacing2)}
+        {renderSpecificVerticalLines(data3, cumulativeSpacing3)}
+        {renderSpecificVerticalLines(data4, cumulativeSpacing4)}
+        {renderSpecificVerticalLines(data5, cumulativeSpacing5)}
 
-        {dataSet?.map((set) => renderSpecificVerticalLines(set?.data)) ?? null}
+        {dataSet?.map((set) =>
+          renderSpecificVerticalLines(set?.data, cumulativeSpacingForSet)
+        ) ?? null}
 
         {/***  !!! Here it's done thrice intentionally, trying to make it to only 1 breaks things !!!  ***/}
         {renderDataPoints(
@@ -1293,7 +1342,8 @@ export const LineChart = (props: LineChartPropsType) => {
           startIndex,
           endIndex,
           isSecondary,
-          showValuesAsDataPointsText
+          showValuesAsDataPointsText,
+          spacingArray
         )}
 
         {showArrow && (
@@ -1339,6 +1389,7 @@ export const LineChart = (props: LineChartPropsType) => {
     endIndex: any,
     isSecondary: any,
     showValuesAsDataPointsText: any,
+    spacingArray: number[],
     key?: number
   ) => {
     return (
@@ -1587,7 +1638,8 @@ export const LineChart = (props: LineChartPropsType) => {
         style={{
           ...svgWrapperViewStyle,
           width: totalWidth,
-          height: containerHeightIncludingBelowXAxis
+          height: containerHeightIncludingBelowXAxis,
+          zIndex
           // left:8,
         }}
       >
@@ -1620,7 +1672,8 @@ export const LineChart = (props: LineChartPropsType) => {
           startIndex,
           endIndex,
           isSecondary,
-          showValuesAsDataPointsText
+          showValuesAsDataPointsText,
+          spacingArray
         )}
       </div>
     )
@@ -1658,6 +1711,7 @@ export const LineChart = (props: LineChartPropsType) => {
     endIndex: any,
     isSecondary: any,
     showValuesAsDataPointsText: any,
+    spacingArray: number[],
     key?: number
   ) => {
     return (
@@ -1665,7 +1719,8 @@ export const LineChart = (props: LineChartPropsType) => {
         style={{
           ...svgWrapperViewStyle,
           width: animatedWidth,
-          height: containerHeightIncludingBelowXAxis
+          height: containerHeightIncludingBelowXAxis,
+          zIndex
           // left:8,
         }}
       >
@@ -1698,7 +1753,8 @@ export const LineChart = (props: LineChartPropsType) => {
           startIndex,
           endIndex,
           isSecondary,
-          showValuesAsDataPointsText
+          showValuesAsDataPointsText,
+          spacingArray
         )}
       </animated.div>
     )
@@ -2002,6 +2058,7 @@ export const LineChart = (props: LineChartPropsType) => {
                     set.endIndex ?? set.data.length - 1,
                     set.isSecondary,
                     showValuesAsDataPointsText,
+                    cumulativeSpacingForSet[index],
                     index
                   )
                 } else {
@@ -2036,6 +2093,7 @@ export const LineChart = (props: LineChartPropsType) => {
                     set.endIndex ?? set.data.length - 1,
                     set.isSecondary,
                     showValuesAsDataPointsText,
+                    cumulativeSpacingForSet[index],
                     index
                   )
                 }
@@ -2074,6 +2132,7 @@ export const LineChart = (props: LineChartPropsType) => {
               endIndex1,
               false,
               showValuesAsDataPointsText,
+              cumulativeSpacing1,
               0
             )
           : renderLine(
@@ -2107,6 +2166,7 @@ export const LineChart = (props: LineChartPropsType) => {
               endIndex1,
               false,
               showValuesAsDataPointsText,
+              cumulativeSpacing1,
               0
             )}
         {secondaryPoints
@@ -2143,6 +2203,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 secondaryLineConfig.endIndex,
                 true,
                 secondaryLineConfig.showValuesAsDataPointsText,
+                cumulativeSpacingSecondary,
                 6
               )
             : renderLine(
@@ -2176,6 +2237,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 secondaryLineConfig.endIndex,
                 true,
                 secondaryLineConfig.showValuesAsDataPointsText,
+                cumulativeSpacingSecondary,
                 6
               )
           : null}
@@ -2213,6 +2275,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex2,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing2,
                 1
               )
             : renderLine(
@@ -2246,6 +2309,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex2,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing2,
                 1
               )
           : null}
@@ -2283,6 +2347,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex3,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing3,
                 2
               )
             : renderLine(
@@ -2316,6 +2381,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex3,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing3,
                 2
               )
           : null}
@@ -2353,6 +2419,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex4,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing4,
                 3
               )
             : renderLine(
@@ -2386,6 +2453,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex4,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing4,
                 3
               )
           : null}
@@ -2423,6 +2491,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex5,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing5,
                 4
               )
             : renderLine(
@@ -2456,6 +2525,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 endIndex5,
                 false,
                 showValuesAsDataPointsText,
+                cumulativeSpacing5,
                 4
               )
           : null}
@@ -2544,6 +2614,26 @@ export const LineChart = (props: LineChartPropsType) => {
             </div>
           )
         })}
+        {/* {pointerConfig?.dynamicLegendComponent && pointerX > 0 ? (
+          <div
+            style={{
+              position: 'absolute',
+              ...pointerConfig.dynamicLegendContainerStyle,
+            }}>
+            {pointerConfig.dynamicLegendComponent(
+              dataSet
+                ? pointerItemsForSet
+                : [
+                    pointerItem,
+                    pointerItem2,
+                    pointerItem3,
+                    pointerItem4,
+                    pointerItem5,
+                  ].filter(item => !!item),
+              pointerIndex,
+            )}
+          </div>
+        ) : null} */}
       </>
     )
   }

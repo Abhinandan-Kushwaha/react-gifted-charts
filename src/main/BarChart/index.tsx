@@ -5,8 +5,9 @@ import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
 import { BarChartPropsType, useBarChart } from 'gifted-charts-core'
 import { StripAndLabel } from '../Components/common/StripAndLabel'
 import { Pointer } from '../Components/common/Pointer'
+import { BarChartPropsTypeForWeb } from 'gifted-charts-core/dist/BarChart/types'
 
-export const BarChart = (props: BarChartPropsType) => {
+export const BarChart = (props: BarChartPropsTypeForWeb) => {
   // const heightValue = useMemo(() => new Animated.Value(0), []);
   // const opacValue = useMemo(() => new Animated.Value(0), []);
   // const widthValue = useMemo(() => new Animated.Value(0), []);
@@ -89,8 +90,14 @@ export const BarChart = (props: BarChartPropsType) => {
     autoShiftLabels,
     getPropsCommonForBarAndStack,
     barAndLineChartsWrapperProps,
-    yAxisExtraHeightAtTop
-  } = useBarChart({...props, parentWidth: props.parentWidth ?? window.innerWidth})
+    yAxisExtraHeightAtTop,
+    autoShiftLabelsForNegativeStacks
+  } = useBarChart({
+    ...props,
+    parentWidth: props.parentWidth ?? window.innerWidth
+  })
+
+  const { stackData } = barAndLineChartsWrapperProps
 
   useEffect(() => {
     if (props.scrollToEnd || props.scrollToIndex)
@@ -182,21 +189,21 @@ export const BarChart = (props: BarChartPropsType) => {
 
   const totalWidth = totalWidthPre - 200
 
-  const yTranslate = (containerHeight ?? 200) + 28 + yAxisExtraHeightAtTop
+  const yTranslate = (containerHeight ?? 200) * 1.05 + 28 //yAxisExtraHeightAtTop
+
+  const contentContainerStyle: React.CSSProperties = {
+    position: 'absolute',
+    height: containerHeightIncludingBelowXAxis,
+    bottom: 98 + labelsExtraHeight,
+    paddingLeft: initialSpacing,
+    width: totalWidth,
+    display: 'flex'
+  }
 
   const renderChartContent = () => {
     if (pointerConfig) {
       return (
-        <div
-          style={{
-            position: 'absolute',
-            height: containerHeightIncludingBelowXAxis,
-            bottom: 58,
-            paddingLeft: initialSpacing,
-            width: totalWidth,
-            display: 'flex'
-          }}
-        >
+        <div style={contentContainerStyle}>
           {pointerX > 0 && stripBehindBars ? (
             <div
               // pointerEvents={pointerEvents ?? 'none'}
@@ -240,16 +247,16 @@ export const BarChart = (props: BarChartPropsType) => {
         </div>
       )
     } else {
-      return renderChart()
+      return <div style={contentContainerStyle}>{renderChart()}</div>
     }
   }
 
   const renderChart = () => {
-    if (props.stackData) {
-      return props.stackData.map((item, index) => {
+    if (stackData) {
+      return stackData.map((item, index) => {
         return (
           <RenderStackBars
-            key={index+''}
+            key={index + ''}
             stackData={props.stackData || []}
             isAnimated={isAnimated}
             animationDuration={animationDuration}
@@ -258,7 +265,11 @@ export const BarChart = (props: BarChartPropsType) => {
             stackBorderTopRightRadius={props.stackBorderTopRightRadius}
             stackBorderBottomLeftRadius={props.stackBorderBottomLeftRadius}
             stackBorderBottomRightRadius={props.stackBorderBottomRightRadius}
+            autoShiftLabelsForNegativeStacks={autoShiftLabelsForNegativeStacks}
             // yTranslate={yTranslate}
+            containerHeightIncludingBelowXAxis={
+              containerHeightIncludingBelowXAxis
+            }
             {...getPropsCommonForBarAndStack(item, index)}
           />
         )
@@ -266,7 +277,7 @@ export const BarChart = (props: BarChartPropsType) => {
     } else {
       return data.map((item, index) => (
         <RenderBars
-          key={index+''}
+          key={index + ''}
           data={data}
           side={side}
           minHeight={props.minHeight ?? (isAnimated && !isThreeD ? 0.1 : 0)}

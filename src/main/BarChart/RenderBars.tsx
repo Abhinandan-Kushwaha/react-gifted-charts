@@ -70,13 +70,22 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     negativeStepHeight,
     negativeStepValue,
     autoCenterTooltip,
-    secondaryXAxis
+    secondaryXAxis,
+    secondaryStepHeight,
+    secondaryStepValue,
+    secondaryNegativeStepHeight,
+    secondaryNegativeStepValue,
+    secondaryNoOfSectionsBelowXAxis
   } = props
 
-  const heightFactor =
-    item.value < 0
-      ? negativeStepHeight / negativeStepValue
-      : stepHeight / stepValue
+  const heightFactor = item.isSecondary
+    ? item.value < 0
+      ? (secondaryNegativeStepHeight ?? secondaryStepHeight) /
+        (secondaryNegativeStepValue ?? secondaryStepValue)
+      : secondaryStepHeight / secondaryStepValue
+    : item.value < 0
+    ? negativeStepHeight / negativeStepValue
+    : stepHeight / stepValue
 
   const barHeight = Math.max(
     0,
@@ -136,7 +145,12 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             width: labelWidth,
             left: spacing / -2,
             position: 'absolute',
-            height: props.xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18,
+            height:
+              props.xAxisLabelsHeight ??
+              xAxisTextNumberOfLines * 18 -
+                (value < 0
+                  ? -xAxisLabelsVerticalShift
+                  : xAxisLabelsVerticalShift),
             bottom: top
               ? (containerHeight || 200) +
                 (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
@@ -144,10 +158,14 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
                   ? -40
                   : -6 -
                     xAxisTextNumberOfLines * 18 -
-                    xAxisLabelsVerticalShift) -
+                    (value < 0
+                      ? -xAxisLabelsVerticalShift
+                      : xAxisLabelsVerticalShift)) -
                 barMarginBottom -
                 xAxisThickness -
-                labelsDistanceFromXaxis
+                (value < 0 && !autoShiftLabels
+                  ? -labelsDistanceFromXaxis
+                  : labelsDistanceFromXaxis)
           }
           if (rotateLabel) {
             if (horizontal) {
@@ -221,7 +239,12 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             width: labelWidth,
             left: spacing / -2,
             position: 'absolute',
-            height: props.xAxisLabelsHeight ?? xAxisTextNumberOfLines * 18,
+            height:
+              props.xAxisLabelsHeight ??
+              xAxisTextNumberOfLines * 18 -
+                (value < 0
+                  ? -xAxisLabelsVerticalShift
+                  : xAxisLabelsVerticalShift),
             bottom: top
               ? (containerHeight || 200) +
                 (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
@@ -391,20 +414,21 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     width: commonPropsFor2dAnd3dBars.barWidth,
     height: barHeight,
     marginRight: spacing,
-    position: 'relative'
+    position: 'relative',
+    transform: `translateY(${-xAxisLabelsVerticalShift}px)`
+    // transform: `translateY(
+    //   ${
+    //     (containerHeight || 200) -
+    //     (barHeight - 10 + xAxisLabelsVerticalShift)
+    //   }px)`
   }
-  if (item.value < 0) {
-    barWrapperStyle.transform = `translateY(
-                ${
-                  (containerHeight || 200) -
-                  (barHeight - 10 + xAxisLabelsVerticalShift) +
-                  (item.value < 0 ? Math.abs(item.value) * heightFactor : 0)
-                } rotateZ(180deg)`
-  } else if (item.value < 0) {
-    barWrapperStyle.transform = `translateY(${
-      Math.abs(item.value) * heightFactor
-    })`
-  }
+  // if (item.value < 0) {
+  //   barWrapperStyle.transform = `translateY(
+  //               ${
+  //                 (containerHeight || 200) -
+  //                 (barHeight - 10 + xAxisLabelsVerticalShift)
+  //               }px) rotateZ(180deg)`
+  // }
   if (side !== 'right') {
     barWrapperStyle.zIndex = data.length - index
   }
@@ -416,7 +440,8 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
 
   const barContent = () => {
     const isBarBelowXaxisAndInvisible =
-      item.value < 0 && !noOfSectionsBelowXAxis
+      item.value < 0 &&
+      !(noOfSectionsBelowXAxis || secondaryNoOfSectionsBelowXAxis)
 
     const animated2DWithGradient = (
       noGradient: boolean,
@@ -550,6 +575,23 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             }
             item.onPress ? item.onPress() : props.onPress?.(item, index)
           }}
+          onContextMenu={(event) => {
+            if (item.onContextMenu || props.onContextMenu)
+              event.preventDefault()
+            item.onContextMenu
+              ? item.onContextMenu()
+              : props.onContextMenu?.(item, index)
+          }}
+          onMouseEnter={() =>
+            item.onMouseEnter
+              ? item.onMouseEnter()
+              : props.onMouseEnter?.(item, index)
+          }
+          onMouseLeave={() =>
+            item.onMouseLeave
+              ? item.onMouseLeave()
+              : props.onMouseLeave?.(item, index)
+          }
           // onLongPress={() => {
           //   item.onLongPress
           //     ? item.onLongPress()

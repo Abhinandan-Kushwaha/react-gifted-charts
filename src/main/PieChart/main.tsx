@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   getPieChartMainProps,
   PieChartMainProps,
@@ -25,6 +25,16 @@ export const PieChartMain = (props: PieChartMainProps) => {
     strokeWidth,
     strokeColor,
     innerRadius,
+    showTooltip,
+    tooltipWidth,
+    tooltipComponent,
+    tooltipVerticalShift,
+    tooltipHorizontalShift,
+    tooltipTextNoOfLines,
+    tooltipBackgroundColor,
+    tooltipBorderRadius,
+    tooltipSelectedIndex,
+    getTooltipText,
     showText,
     textColor,
     textSize,
@@ -49,12 +59,18 @@ export const PieChartMain = (props: PieChartMainProps) => {
     paddingVertical,
     extraRadius,
     showExternalLabels,
-    getExternaLabelProperties
+    getExternaLabelProperties,
+    font,
+    fontWeight,
+    fontStyle
   } = getPieChartMainProps(props)
 
   let prevSide = 'right'
   let prevLabelComponentX = 0
   let wasFirstItemOnPole = false
+
+  const [touchX, setTouchX] = useState(0)
+  const [touchY, setTouchY] = useState(0)
 
   let containerStyle: React.CSSProperties = {
     backgroundColor: backgroundColor.toString(),
@@ -178,7 +194,7 @@ export const PieChartMain = (props: PieChartMainProps) => {
                 }
                 fill={
                   props.selectedIndex === index || item.peripheral
-                    ? 'transparent'
+                    ? 'none'
                     : showGradient
                     ? `url(#grad${index})`
                     : item.color || pieColors[index % 9]
@@ -351,9 +367,9 @@ export const PieChartMain = (props: PieChartMainProps) => {
                       item.textColor || textColor || pieColors[(index + 2) % 9]
                     }
                     fontSize={item.textSize || textSize}
-                    fontFamily={item.font || props.font}
-                    fontWeight={item.fontWeight || props.fontWeight}
-                    fontStyle={item.fontStyle || props.fontStyle || 'normal'}
+                    fontFamily={item.font || font}
+                    fontWeight={item.fontWeight || fontWeight}
+                    fontStyle={item.fontStyle || fontStyle || 'normal'}
                     x={
                       x +
                       (item.shiftTextX || 0) -
@@ -404,6 +420,62 @@ export const PieChartMain = (props: PieChartMainProps) => {
             zIndex: -1
           }}
         />
+      ) : null}
+      {showTooltip && tooltipSelectedIndex !== -1 ? (
+        <div
+          style={{
+            position: 'absolute',
+            left:
+              touchX > (radius + extraRadius) * 1.5
+                ? props.tooltipHorizontalShift
+                  ? touchX - tooltipHorizontalShift
+                  : touchX -
+                    (tooltipWidth ??
+                      getTooltipText(tooltipSelectedIndex).length * 10)
+                : touchX - tooltipHorizontalShift,
+            top:
+              touchY < 30
+                ? props.tooltipVerticalShift
+                  ? touchY - tooltipVerticalShift
+                  : touchY
+                : touchY - tooltipVerticalShift
+          }}
+        >
+          {data[tooltipSelectedIndex].tooltipComponent ? (
+            data[tooltipSelectedIndex].tooltipComponent?.()
+          ) : tooltipComponent ? (
+            tooltipComponent(tooltipSelectedIndex)
+          ) : (
+            <div
+              style={{
+                backgroundColor: tooltipBackgroundColor.toString(),
+                borderRadius: tooltipBorderRadius,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                paddingTop: 4,
+                width: tooltipWidth
+              }}
+            >
+              <text
+                // numberOfLines={tooltipTextNoOfLines}
+                style={{
+                  color:
+                    data[tooltipSelectedIndex].textColor ||
+                    textColor ||
+                    'white',
+                  textAlign: 'center',
+                  fontSize: textSize,
+                  fontFamily: font,
+                  fontWeight,
+                  fontStyle
+                }}
+              >
+                {getTooltipText(tooltipSelectedIndex)}
+              </text>
+            </div>
+          )}
+        </div>
       ) : null}
     </div>
   )

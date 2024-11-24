@@ -74,7 +74,10 @@ export const LineChartBicolor = (props: LineChartBicolorPropsType) => {
     unFocusOnPressOut,
     delayBeforeUnFocus,
     barAndLineChartsWrapperProps
-  } = useLineChartBiColor({...props, parentWidth: props.parentWidth ?? screenWidth})
+  } = useLineChartBiColor({
+    ...props,
+    parentWidth: props.parentWidth ?? screenWidth
+  })
 
   // const labelsAppear = useCallback(() => {
   //   opacValue.setValue(0);
@@ -574,7 +577,7 @@ export const LineChartBicolor = (props: LineChartBicolorPropsType) => {
                       ? 'url(#Gradient)'
                       : 'url(#GradientNegative)'
                   }
-                  stroke={'transparent'}
+                  stroke={'none'}
                   strokeWidth={currentLineThickness || thickness}
                 />
               )

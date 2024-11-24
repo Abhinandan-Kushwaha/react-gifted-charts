@@ -80,7 +80,7 @@ const RenderVerticalLines = (props: any) => {
             verticalLinesShift +
             1 +
             (chartType === chartTypes.BAR
-              ? totalSpacing - 1
+              ? totalSpacing + initialSpacing - 2
               : verticalLinesSpacing
               ? verticalLinesSpacing * (index + 1)
               : index * spacing + (initialSpacing - 2))
