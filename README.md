@@ -10,5 +10,5 @@ ReactJS counterpart of [react-native-gifted-charts](https://github.com/Abhinanda
 ```
 ### Tests
 
-Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo.
+Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo. <br />
 See the [test reports here](https://abhinandan-kushwaha.github.io/react-gifted-charts-test/ss-test/test.html)
