@@ -8,3 +8,7 @@ ReactJS counterpart of [react-native-gifted-charts](https://github.com/Abhinanda
     "react-refresh": "0.11.0"
   },
 ```
+### Tests
+
+Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo.
+See the [test reports here](https://abhinandan-kushwaha.github.io/react-gifted-charts-test/ss-test/test.html)
