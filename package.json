@@ -1,13 +1,13 @@
 {
   "name": "react-gifted-charts",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "ReactJS counterpart of react-native-gifted-charts",
   "main": "dist/main.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "gifted-charts-core": "0.1.51"
+    "gifted-charts-core": "0.1.52"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.7",
