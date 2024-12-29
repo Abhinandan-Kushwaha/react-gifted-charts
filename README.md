@@ -18,7 +18,7 @@ npm i react-gifted-charts @react-spring/web
 ![Gifted charts](https://raw.githubusercontent.com/Abhinandan-Kushwaha/react-native-gifted-charts/14f8fa316ed9b2d6bd188ad73484c82fca857fe0/docs/dev/gifted-charts-architecture.drawio.svg)
 
 
-# Docs
+## Docs
 
 [Documentation and gallery](https://gifted-charts.web.app/)
 
@@ -49,3 +49,8 @@ const data=[ {value:50}, {value:80}, {value:90}, {value:70} ]
 
 <PieChart data = {data} donut />
 ```
+
+### Tests
+
+Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo. <br />
+See the [test reports here](https://abhinandan-kushwaha.github.io/react-gifted-charts-test/ss-test/test.html)
