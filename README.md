@@ -15,7 +15,7 @@ npm i react-gifted-charts @react-spring/web
   },
 ```
 
-![Gifted charts](https://raw.githubusercontent.com/Abhinandan-Kushwaha/react-native-gifted-charts/14f8fa316ed9b2d6bd188ad73484c82fca857fe0/docs/dev/gifted-charts-architecture.drawio.svg)
+![Gifted charts](https://raw.githubusercontent.com/Abhinandan-Kushwaha/react-native-gifted-charts/db0b1034ed869c87db66998efb8588da76c7439a/docs/dev/gifted-charts-architecture.drawio.svg)
 
 
 ## Docs
