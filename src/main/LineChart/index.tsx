@@ -1,13 +1,5 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
-import { styles } from './styles'
-import { screenWidth, usePrevious } from '../utils'
+import React, { Fragment, useRef, useState } from 'react'
+import { screenWidth } from '../utils'
 import {
   getSegmentedPathObjects,
   getRegionPathObjects,
@@ -18,10 +10,10 @@ import {
   STOP,
   LineChartPropsType,
   lineDataItem,
-  LineSvgProps,
   useLineChart,
   adjustToOffset,
-  LineProperties
+  LineProperties,
+  lineDataItemNullSafe
 } from 'gifted-charts-core'
 import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
 import { StripAndLabel } from '../Components/common/StripAndLabel'
@@ -120,6 +112,7 @@ export const LineChart = (props: LineChartPropsType) => {
     animationDuration,
     onDataChangeAnimationDuration,
     animateTogether,
+    renderDataPointsAfterAnimationEnds,
     animateOnDataChange,
     startIndex1,
     startIndex2,
@@ -298,18 +291,24 @@ export const LineChart = (props: LineChartPropsType) => {
     stripColor,
     stripOpacity,
     stripStrokeDashArray,
-    unFocusOnPressOut,
-    delayBeforeUnFocus,
     containerHeightIncludingBelowXAxis = 0,
     lineGradient,
     lineGradientDirection,
     lineGradientStartColor,
     lineGradientEndColor,
     barAndLineChartsWrapperProps,
-    areaChart,
-    mostNegativeValue
+    mostNegativeValue,
+    lastLineNumber,
+    focusTogether,
+    selectedLineNumber,
+    handleFocus,
+    handleUnFocus
     // oldPoints
   } = useLineChart({ ...props, parentWidth: props.parentWidth ?? screenWidth })
+
+  const svgHeight =
+    containerHeightIncludingBelowXAxis +
+    (props.overflowBottom ?? dataPointsRadius1)
 
   const { secondaryXAxis, intersectionAreaConfig } = props
 
@@ -509,9 +508,7 @@ export const LineChart = (props: LineChartPropsType) => {
 
   const svgWrapperViewStyle: React.CSSProperties = {
     position: 'absolute',
-    height:
-      containerHeightIncludingBelowXAxis +
-      (props.overflowBottom ?? dataPointsRadius1),
+    height: svgHeight,
     left: 0,
     bottom: 73 + xAxisLabelsVerticalShift + labelsExtraHeight - xAxisThickness,
     zIndex: 1,
@@ -624,10 +621,11 @@ export const LineChart = (props: LineChartPropsType) => {
     endIndex: any,
     isSecondary: any,
     showValuesAsDataPointsText: any,
-    spacingArray: number[]
+    spacingArray: number[],
+    key: number
   ) => {
     const getYOrSecondaryY = isSecondary ? getSecondaryY : getY
-    return dataForRender.map((item: lineDataItem, index: number) => {
+    return dataForRender.map((item: lineDataItemNullSafe, index: number) => {
       if (index < startIndex || index > endIndex) return null
       if (item.hideDataPoint) {
         return null
@@ -640,7 +638,10 @@ export const LineChart = (props: LineChartPropsType) => {
         text,
         customDataPoint,
         dataPointLabelComponent
-      if (index === selectedIndex) {
+      if (
+        index === selectedIndex &&
+        (focusTogether || key === selectedLineNumber)
+      ) {
         dataPointsShape =
           item.focusedDataPointShape ||
           props.focusedDataPointShape ||
@@ -690,6 +691,12 @@ export const LineChart = (props: LineChartPropsType) => {
         text = originalDataFromProps[index].value
       }
 
+      const dataPointLabelWidth = item.dataPointLabelWidth
+        ? item.dataPointLabelWidth
+        : props.dataPointLabelWidth
+        ? props.dataPointLabelWidth
+        : 30
+
       const currentStripHeight = item.stripHeight ?? stripHeight
       const currentStripWidth = item.stripWidth ?? stripWidth
       const currentStripOpacity = item.stripOpacity ?? stripOpacity
@@ -713,28 +720,20 @@ export const LineChart = (props: LineChartPropsType) => {
         <Fragment key={index}>
           {focusEnabled ? (
             <>
-              {unFocusOnPressOut ? ( // remove strip on onFocus
+              {key === lastLineNumber - 1 ? (
                 <rect
-                  // onPressIn={() => onStripPress(item, index)}
-                  // onPressOut={() =>
-                  //   setTimeout(() => setSelectedIndex(-1), delayBeforeUnFocus)
-                  // }
-                  x={initialSpacing + (spacing * index - spacing / 2)}
-                  y={8}
-                  width={spacing}
-                  height={containerHeight - 0}
-                  fill={'none'}
-                />
-              ) : (
-                <rect
-                  onClick={() => onStripPress(item, index)}
                   x={initialSpacing + (spacing * index - spacing / 2)}
                   y={8}
                   width={spacing}
                   height={containerHeight}
-                  fill={'none'}
+                  fill={'transparent'}
+                  onMouseDown={(evt) => {
+                    const locationY = evt.nativeEvent.y // Note that we have another property named pageY which can be useful
+                    handleFocus(index, item, locationY, onStripPress)
+                  }}
+                  onMouseUp={handleUnFocus}
                 />
-              )}
+              ) : null}
             </>
           ) : null}
           {item.showStrip ||
@@ -753,19 +752,45 @@ export const LineChart = (props: LineChartPropsType) => {
           {hideDataPoints ? null : (
             <>
               {customDataPoint ? (
-                <div
-                  style={{
-                    ...styles.customDataPointContainer,
-                    height: dataPointsHeight,
-                    width: dataPointsWidth,
-                    top: getYOrSecondaryY(item.value),
-                    [position]:
-                      initialSpacing - dataPointsWidth + spacing * index
-                    // transform: `scaleX(${I18nManager.isRTL ? -1 : 1}px)`,
+                <foreignObject
+                  height={dataPointsHeight * 2}
+                  width={dataPointsWidth * 2}
+                  x={
+                    initialSpacing -
+                    dataPointsWidth / 2 +
+                    (spacingArray[index - 1] ?? 0)
+                  }
+                  y={getYOrSecondaryY(item.value) - dataPointsHeight / 2}
+                  onClick={() => {
+                    if (item.onPress) {
+                      item.onPress(item, index)
+                    } else if (props.onPress) {
+                      props.onPress(item, index)
+                    } else if (focusEnabled) {
+                      handleFocus(index, item, 0, onStripPress)
+                    }
+                  }}
+                  onLoad={() => {
+                    // In absence of this, focus persists forever
+                    if (!item.onPress && !props.onPress && focusEnabled) {
+                      handleUnFocus()
+                    }
+                  }}
+                  onMouseEnter={() => {
+                    // In absence of this, focus persists forever
+                    if (!item.onPress && !props.onPress && focusEnabled) {
+                      handleUnFocus()
+                    }
+                  }}
+                  onMouseUp={() => {
+                    // In absence of this, focus persists forever
+                    if (!item.onPress && !props.onPress && focusEnabled) {
+                      handleUnFocus()
+                    }
                   }}
                 >
                   {customDataPoint(item, index)}
-                </div>
+                </foreignObject>
               ) : null}
               {dataPointsShape === 'rectangular' ? (
                 <Fragment key={index}>
@@ -773,8 +798,8 @@ export const LineChart = (props: LineChartPropsType) => {
                     <rect
                       x={getX(spacingArray, index) - dataPointsWidth / 2}
                       y={getYOrSecondaryY(item.value) - dataPointsHeight / 2}
-                      width={dataPointsWidth}
-                      height={dataPointsHeight}
+                      width={totalWidth}
+                      height={svgHeight}
                       fill={
                         showDataPointOnFocus
                           ? index === selectedIndex
@@ -787,6 +812,13 @@ export const LineChart = (props: LineChartPropsType) => {
                           item.onPress(item, index)
                         } else if (props.onPress) {
                           props.onPress(item, index)
+                        } else if (focusEnabled) {
+                          handleFocus(index, item, 0, onStripPress)
+                        }
+                      }}
+                      onMouseUp={() => {
+                        if (!item.onPress && !props.onPress && focusEnabled) {
+                          handleUnFocus()
                         }
                       }}
                     />
@@ -811,6 +843,13 @@ export const LineChart = (props: LineChartPropsType) => {
                           item.onPress(item, index)
                         } else if (props.onPress) {
                           props.onPress(item, index)
+                        } else if (focusEnabled) {
+                          handleFocus(index, item, 0, onStripPress)
+                        }
+                      }}
+                      onMouseUp={() => {
+                        if (!item.onPress && !props.onPress && focusEnabled) {
+                          handleUnFocus()
                         }
                       }}
                     />
@@ -819,36 +858,44 @@ export const LineChart = (props: LineChartPropsType) => {
               )}
               {dataPointLabelComponent ? (
                 !showTextOnFocus || index === selectedIndex ? (
-                  <div
-                    style={{
-                      ...styles.customDataPointContainer,
-                      zIndex: index === selectedIndex ? 1000 : 0,
-                      top:
-                        containerHeight +
-                        (item.dataPointLabelShiftY ||
-                          props.dataPointLabelShiftY ||
-                          0) -
-                        (item.value * containerHeight) / maxValue,
-                      left:
-                        initialSpacing +
-                        (item.dataPointLabelShiftX ||
-                          props.dataPointLabelShiftX ||
-                          0) -
-                        (item.dataPointLabelWidth
-                          ? item.dataPointLabelWidth + 20
-                          : props.dataPointLabelWidth
-                          ? props.dataPointLabelWidth + 20
-                          : 50) /
-                          2 +
-                        spacing * index
+                  <foreignObject
+                    height={svgHeight}
+                    width={totalWidth}
+                    x={
+                      initialSpacing +
+                      (item.dataPointLabelShiftX ||
+                        props.dataPointLabelShiftX ||
+                        0) -
+                      dataPointLabelWidth / 2 +
+                      spacing * index
+                    }
+                    y={
+                      containerHeight +
+                      (item.dataPointLabelShiftY ||
+                        props.dataPointLabelShiftY ||
+                        0) -
+                      (item.value * containerHeight) / maxValue
+                    }
+                    onLoad={() => {
+                      // In absence of this, focus persists forever
+                      if (!item.onPress && !props.onPress && focusEnabled) {
+                        handleUnFocus()
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      // In absence of this, focus persists forever
+                      if (!item.onPress && !props.onPress && focusEnabled) {
+                        handleUnFocus()
+                      }
                     }}
                   >
                     {showDataPointLabelOnFocus
-                      ? index === selectedIndex
-                        ? dataPointLabelComponent()
+                      ? index === selectedIndex &&
+                        (focusTogether || key == selectedLineNumber)
+                        ? dataPointLabelComponent(item, index)
                         : null
-                      : dataPointLabelComponent()}
-                  </div>
+                      : dataPointLabelComponent(item, index)}
+                  </foreignObject>
                 ) : null
               ) : text || item.dataPointText ? (
                 !showTextOnFocus || index === selectedIndex ? (
@@ -883,7 +930,7 @@ export const LineChart = (props: LineChartPropsType) => {
     dataForRender: any,
     spacingArray: number[]
   ) => {
-    return dataForRender.map((item: lineDataItem, index: number) => {
+    return dataForRender.map((item: lineDataItemNullSafe, index: number) => {
       if (item.showVerticalLine) {
         const x = getX(spacingArray, index)
         return (
@@ -893,7 +940,12 @@ export const LineChart = (props: LineChartPropsType) => {
             y1={extendedContainerHeight}
             x2={x}
             y2={
-              item.verticalLineUptoDataPoint ?? props.verticalLinesUptoDataPoint
+              item.verticalLineHeight
+                ? extendedContainerHeight - item.verticalLineHeight
+                : props.verticalLinesHeight
+                ? extendedContainerHeight - props.verticalLinesHeight
+                : item.verticalLineUptoDataPoint ??
+                  props.verticalLinesUptoDataPoint
                 ? getY(item.value)
                 : -xAxisThickness
             }
@@ -1106,14 +1158,7 @@ export const LineChart = (props: LineChartPropsType) => {
   const renderIntersection = () => {
     return (
       <div style={{ ...svgWrapperViewStyle, width: totalWidth }}>
-        <svg
-          height={
-            containerHeightIncludingBelowXAxis +
-            (props.overflowBottom ?? dataPointsRadius1) -
-            6
-          }
-          width={totalWidth}
-        >
+        <svg height={svgHeight - 6} width={totalWidth}>
           {/* Define the paths path1 & path2 */}
           <path id='path1' d={fillPoints} fill='none' stroke={'none'} />
           <path id='path2' d={fillPoints2} fill='none' stroke={'none'} />
@@ -1146,6 +1191,171 @@ export const LineChart = (props: LineChartPropsType) => {
 
   // console.log('oldPoints---->>>>',oldPoints)
   // console.log('points............',points)
+
+  const renderDataPointsForEachLine = () => {
+    if (dataSet && pointsFromSet.length) {
+      return (
+        <>
+          {dataSet.map((set, index) => {
+            const {
+              hideDataPoints,
+              data,
+              dataPointsShape,
+              dataPointsWidth,
+              dataPointsHeight,
+              dataPointsColor,
+              dataPointsRadius,
+              textColor,
+              textFontSize,
+              startIndex,
+              endIndex,
+              isSecondary
+            } = set
+            return renderDataPoints(
+              hideDataPoints ?? hideDataPoints1,
+              data,
+              adjustToOffset(data, -(props.yAxisOffset ?? 0)),
+              dataPointsShape ?? dataPointsShape1,
+              dataPointsWidth ?? dataPointsWidth1,
+              dataPointsHeight ?? dataPointsHeight1,
+              dataPointsColor ?? dataPointsColor1,
+              dataPointsRadius ?? dataPointsRadius1,
+              textColor ?? textColor1,
+              textFontSize ?? textFontSize1,
+              startIndex ?? 0,
+              endIndex ?? set.data.length - 1,
+              isSecondary,
+              showValuesAsDataPointsText,
+              cumulativeSpacingForSet[index],
+              index
+            )
+          })}
+        </>
+      )
+    }
+    return (
+      <>
+        {renderDataPoints(
+          hideDataPoints1,
+          data,
+          props.data,
+          dataPointsShape1,
+          dataPointsWidth1,
+          dataPointsHeight1,
+          dataPointsColor1,
+          dataPointsRadius1,
+          textColor1,
+          textFontSize1,
+          startIndex1,
+          endIndex1,
+          false,
+          showValuesAsDataPointsText,
+          cumulativeSpacing1,
+          0
+        )}
+        {points2
+          ? renderDataPoints(
+              hideDataPoints2,
+              data2,
+              props.data2,
+              dataPointsShape2,
+              dataPointsWidth2,
+              dataPointsHeight2,
+              dataPointsColor2,
+              dataPointsRadius2,
+              textColor2,
+              textFontSize2,
+              startIndex2,
+              endIndex2,
+              false,
+              showValuesAsDataPointsText,
+              cumulativeSpacing2,
+              1
+            )
+          : null}
+        {points3
+          ? renderDataPoints(
+              hideDataPoints3,
+              data3,
+              props.data3,
+              dataPointsShape3,
+              dataPointsWidth3,
+              dataPointsHeight3,
+              dataPointsColor3,
+              dataPointsRadius3,
+              textColor3,
+              textFontSize3,
+              startIndex3,
+              endIndex3,
+              false,
+              showValuesAsDataPointsText,
+              cumulativeSpacing3,
+              2
+            )
+          : null}
+        {points4
+          ? renderDataPoints(
+              hideDataPoints4,
+              data4,
+              props.data4,
+              dataPointsShape4,
+              dataPointsWidth4,
+              dataPointsHeight4,
+              dataPointsColor4,
+              dataPointsRadius4,
+              textColor4,
+              textFontSize4,
+              startIndex4,
+              endIndex4,
+              false,
+              showValuesAsDataPointsText,
+              cumulativeSpacing4,
+              3
+            )
+          : null}
+        {points5
+          ? renderDataPoints(
+              hideDataPoints5,
+              data5,
+              props.data5,
+              dataPointsShape5,
+              dataPointsWidth5,
+              dataPointsHeight5,
+              dataPointsColor5,
+              dataPointsRadius5,
+              textColor5,
+              textFontSize5,
+              startIndex5,
+              endIndex5,
+              false,
+              showValuesAsDataPointsText,
+              cumulativeSpacing5,
+              4
+            )
+          : null}
+        {secondaryPoints
+          ? renderDataPoints(
+              secondaryLineConfig.hideDataPoints,
+              secondaryData,
+              props.secondaryData,
+              secondaryLineConfig.dataPointsShape,
+              secondaryLineConfig.dataPointsWidth,
+              secondaryLineConfig.dataPointsHeight,
+              secondaryLineConfig.dataPointsColor,
+              secondaryLineConfig.dataPointsRadius,
+              secondaryLineConfig.textColor,
+              secondaryLineConfig.textFontSize,
+              secondaryLineConfig.startIndex,
+              secondaryLineConfig.endIndex,
+              true,
+              secondaryLineConfig.showValuesAsDataPointsText,
+              cumulativeSpacingSecondary,
+              6666
+            )
+          : null}
+      </>
+    )
+  }
 
   const lineSvgComponent = (
     points: any,
@@ -1328,23 +1538,28 @@ export const LineChart = (props: LineChartPropsType) => {
         ) ?? null}
 
         {/***  !!! Here it's done thrice intentionally, trying to make it to only 1 breaks things !!!  ***/}
-        {renderDataPoints(
-          hideDataPoints,
-          data,
-          propsData,
-          dataPointsShape,
-          dataPointsWidth,
-          dataPointsHeight,
-          dataPointsColor,
-          dataPointsRadius,
-          textColor,
-          textFontSize,
-          startIndex,
-          endIndex,
-          isSecondary,
-          showValuesAsDataPointsText,
-          spacingArray
-        )}
+        {isAnimated && !renderDataPointsAfterAnimationEnds // in this condition onPress won't work properly in case of multi-line, so it's suggested to use either renderDataPointsAfterAnimationEnds prop if you want to use onPress for data points
+          ? renderDataPoints(
+              hideDataPoints,
+              data,
+              propsData,
+              dataPointsShape,
+              dataPointsWidth,
+              dataPointsHeight,
+              dataPointsColor,
+              dataPointsRadius,
+              textColor,
+              textFontSize,
+              startIndex,
+              endIndex,
+              isSecondary,
+              showValuesAsDataPointsText,
+              spacingArray,
+              key
+            )
+          : key === lastLineNumber - 1
+          ? renderDataPointsForEachLine()
+          : null}
 
         {showArrow && (
           <path
@@ -2204,7 +2419,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 true,
                 secondaryLineConfig.showValuesAsDataPointsText,
                 cumulativeSpacingSecondary,
-                6
+                6666
               )
             : renderLine(
                 containerHeightIncludingBelowXAxis,
@@ -2238,7 +2453,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 true,
                 secondaryLineConfig.showValuesAsDataPointsText,
                 cumulativeSpacingSecondary,
-                6
+                6666
               )
           : null}
         {points2
@@ -2641,7 +2856,7 @@ export const LineChart = (props: LineChartPropsType) => {
   return (
     <BarAndLineChartsWrapper
       {...barAndLineChartsWrapperProps}
-      dataSet={props.dataSet}
+      dataSet={dataSet}
       scrollRef={scrollRef}
       // animatedWidth={animatedWidth}
       renderChartContent={renderChartContent}

@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import {
   useRenderStackBars,
   BarDefaults,
@@ -20,11 +20,8 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     xAxisTextNumberOfLines,
     xAxisLabelsVerticalShift,
     renderTooltip,
-    leftShiftForTooltip,
-    leftShiftForLastIndexTooltip,
     selectedIndex,
     setSelectedIndex,
-    activeOpacity,
     stackData,
     animationDuration = BarDefaults.animationDuration,
     barBorderWidth,
@@ -36,12 +33,12 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     stackBorderBottomRightRadius,
     showValuesAsTopLabel,
     autoShiftLabelsForNegativeStacks = true,
-    labelsDistanceFromXaxis = 0,
     secondaryStepHeight,
     secondaryStepValue,
     secondaryNegativeStepHeight,
     secondaryNegativeStepValue,
-    containerHeightIncludingBelowXAxis
+    containerHeightIncludingBelowXAxis,
+    barMarginBottom
   } = props
   const {
     containsNegativeValue,
@@ -149,6 +146,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
   // };
 
   const static2DSimple = () => {
+    let remainingBarMarginBottom = barMarginBottom
     return (
       <>
         <div
@@ -210,10 +208,21 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
         >
           {item.stacks.map((stackItem, index) => {
             const borderRadii = getStackBorderRadii(item, index)
-            const barHeight = getBarHeight(
-              stackItem.value,
-              stackItem.marginBottom
+
+            let barHeight = getBarHeight(stackItem.value, 0)
+
+            const marginBottom = Math.max(
+              stackItem.marginBottom ?? 0,
+              remainingBarMarginBottom
             )
+            const deductedMargin = Math.min(barHeight, marginBottom)
+
+            remainingBarMarginBottom = Math.max(
+              0,
+              remainingBarMarginBottom - deductedMargin
+            )
+
+            barHeight -= deductedMargin
 
             return (
               <div
@@ -223,7 +232,7 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
                 // disabled={disablePress || !stackItem.onPress}
                 style={{
                   position: 'absolute',
-                  bottom: getPosition(index) + (stackItem.marginBottom || 0),
+                  bottom: getPosition(index, barHeight) + deductedMargin,
                   width: '100%',
                   height: barHeight,
                   backgroundColor: (

@@ -1,23 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-
-interface TooltipProps {
-  barHeight: number
-  barWidth: number
-  item: any
-  index: number
-  isLast: boolean
-  leftSpacing: number
-  leftShiftForLastIndexTooltip: number
-  leftShiftForTooltip: number
-  renderTooltip?: Function
-  autoCenterTooltip?: boolean
-  horizontal?: boolean
-}
+import { TooltipProps } from 'gifted-charts-core'
+import { useState, useEffect, useRef } from 'react'
 
 const Tooltip = (props: TooltipProps) => {
   const divRef = useRef(null)
   const {
-    barHeight,
     barWidth,
     item,
     index,
@@ -27,7 +13,8 @@ const Tooltip = (props: TooltipProps) => {
     leftShiftForTooltip,
     renderTooltip,
     autoCenterTooltip,
-    horizontal
+    horizontal,
+    bottom
   } = props
 
   //   const [width, setWidth] = useState(0);
@@ -43,8 +30,7 @@ const Tooltip = (props: TooltipProps) => {
       resizeObserver = new ResizeObserver((entries) => {
         for (let entry of entries) {
           const width = entry.contentRect.width
-          const shift = (width - barWidth) / 2
-          if (shift > 0) setLeftShiftTooltipForCentering(shift)
+          setLeftShiftTooltipForCentering((width - barWidth) / 2)
         }
       })
 
@@ -65,7 +51,7 @@ const Tooltip = (props: TooltipProps) => {
       ref={divRef}
       style={{
         position: 'absolute',
-        bottom: barHeight + 60,
+        bottom: bottom - 28,
         left:
           leftSpacing -
           (isLast ? leftShiftForLastIndexTooltip : leftShiftForTooltip) -

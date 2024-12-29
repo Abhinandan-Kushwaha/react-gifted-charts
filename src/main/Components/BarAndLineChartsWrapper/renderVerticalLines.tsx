@@ -18,7 +18,6 @@ const RenderVerticalLines = (props: any) => {
     labelsExtraHeight,
     containerHeight,
     data,
-    stackData,
     barWidth,
     maxValue,
     chartType,
@@ -96,7 +95,10 @@ const RenderVerticalLines = (props: any) => {
                 7
               }
               x2={x}
-              y2={extendedContainerHeight - heightAdjustmentDueToStrokeLinecap}
+              y2={
+                containerHeightIncludingBelowXAxis -
+                heightAdjustmentDueToStrokeLinecap
+              }
               stroke={verticalLinesColor || 'lightgray'}
               strokeWidth={verticalLinesThickness || 2}
               strokeDasharray={verticalLinesStrokeDashArray ?? ''}

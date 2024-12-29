@@ -26,7 +26,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
     noAnimation,
     containerHeight,
     maxValue,
-    barMarginBottom,
+    // barMarginBottom,
     barInnerComponent,
     intactTopLabel,
     showValuesAsTopLabel,
@@ -91,10 +91,9 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
             width: barWidth,
             overflow: 'hidden',
             transition: `height ${animationDuration / 1000}s`,
-            height:
-              (noAnimation
-                ? Math.max(props.minHeight, Math.abs(height))
-                : height) - (barMarginBottom || 0)
+            height: noAnimation
+              ? Math.max(props.minHeight, Math.abs(height))
+              : height
           }
           if (item.value < 0) {
             style.transform = `rotate(180deg) translateY(${
@@ -121,10 +120,9 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
           style={(() => {
             let style: React.CSSProperties = {
               width: '100%',
-              height:
-                (noAnimation
-                  ? Math.max(props.minHeight, Math.abs(height))
-                  : height) - (barMarginBottom || 0)
+              height: noAnimation
+                ? Math.max(props.minHeight, Math.abs(height))
+                : height
             }
 
             if (item.barStyle) {

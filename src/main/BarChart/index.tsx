@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import RenderBars from './RenderBars'
 import RenderStackBars from './RenderStackBars'
 import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
-import { BarChartPropsType, useBarChart } from 'gifted-charts-core'
+import { useBarChart } from 'gifted-charts-core'
 import { StripAndLabel } from '../Components/common/StripAndLabel'
 import { Pointer } from '../Components/common/Pointer'
 import { BarChartPropsTypeForWeb } from 'gifted-charts-core/dist/BarChart/types'
@@ -25,7 +25,6 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
   }
 
   const {
-    lineConfig,
     hidePointer1,
     pointerItem,
     pointerY,
@@ -51,28 +50,12 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     xAxisThickness,
     pointerStripColor,
     pointerEvents,
-    setResponderStartTime,
-    setPointerY,
-    setPointerItem,
     initialSpacing,
-    spacing,
     data,
-    barWidth,
-    setPointerX,
-    setPointerIndex,
-    maxValue,
-    maxItem,
-    responderStartTime,
-    setResponderActive,
-    activatePointersDelay,
-    persistPointer,
-    pointerVanishDelay,
     containerHeightIncludingBelowXAxis,
     extendedContainerHeight,
     totalWidth: totalWidthPre,
-    endSpacing,
     stripBehindBars,
-    noOfSections,
     noOfSectionsBelowXAxis,
     stepHeight,
     xAxisLabelsVerticalShift,
@@ -90,7 +73,6 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     autoShiftLabels,
     getPropsCommonForBarAndStack,
     barAndLineChartsWrapperProps,
-    yAxisExtraHeightAtTop,
     autoShiftLabelsForNegativeStacks
   } = useBarChart({
     ...props,
@@ -267,9 +249,6 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
             stackBorderBottomRightRadius={props.stackBorderBottomRightRadius}
             autoShiftLabelsForNegativeStacks={autoShiftLabelsForNegativeStacks}
             // yTranslate={yTranslate}
-            containerHeightIncludingBelowXAxis={
-              containerHeightIncludingBelowXAxis
-            }
             {...getPropsCommonForBarAndStack(item, index)}
           />
         )
@@ -298,7 +277,7 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
           capColor={props.capColor}
           capRadius={props.capRadius}
           autoShiftLabels={autoShiftLabels}
-          barMarginBottom={props.barMarginBottom}
+          // barMarginBottom={props.barMarginBottom}
           barStyle={props.barStyle}
           yTranslate={yTranslate}
           scrollToBarRef={scrollToBarRef}

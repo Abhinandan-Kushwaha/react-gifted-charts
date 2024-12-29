@@ -108,6 +108,7 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
 
   const renderAxesAndRules = (index: number) => {
     const invertedIndex = horizSections.length - index - 1
+    const rulesConfigArrayLocal = rulesConfigArray[invertedIndex - 1]
     return (
       <div
         style={(() => {
@@ -165,17 +166,15 @@ export const renderHorizSections = (props: IhorizSectionPropTypes) => {
             config={{
               thickness: hideRules
                 ? 0
-                : rulesConfigArray[invertedIndex]?.rulesThickness ??
-                  rulesThickness,
-              color: rulesConfigArray[invertedIndex]?.rulesColor ?? rulesColor,
+                : rulesConfigArrayLocal?.rulesThickness ?? rulesThickness,
+              color: rulesConfigArrayLocal?.rulesColor ?? rulesColor,
               width:
-                rulesConfigArray[invertedIndex]?.rulesLength ??
+                rulesConfigArrayLocal?.rulesLength ??
                 rulesLength ??
                 (props.width || totalWidth - spacing) + endSpacing,
-              dashWidth:
-                rulesConfigArray[invertedIndex]?.dashWidth ?? dashWidth,
-              dashGap: rulesConfigArray[invertedIndex]?.dashGap ?? dashGap,
-              type: rulesConfigArray[invertedIndex]?.rulesType ?? rulesType
+              dashWidth: rulesConfigArrayLocal?.dashWidth ?? dashWidth,
+              dashGap: rulesConfigArrayLocal?.dashGap ?? dashGap,
+              type: rulesConfigArrayLocal?.rulesType ?? rulesType
             }}
           />
         )}
