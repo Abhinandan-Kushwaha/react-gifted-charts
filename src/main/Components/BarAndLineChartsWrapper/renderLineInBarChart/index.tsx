@@ -71,14 +71,17 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
         style={{
           position: 'absolute',
           height: containerHeightIncludingBelowXAxis + labelsExtraHeight,
-          left: 6 - yAxisLabelWidth,
+          left: initialSpacing + 4 - yAxisLabelWidth,
           bottom: 60 + xAxisLabelsVerticalShift, //stepHeight * -0.5 + xAxisThickness,
           width: totalWidth,
           zIndex: lineBehindBars ? -1 : 100000
           // backgroundColor: 'wheat',
         }}
       >
-        <svg height={containerHeightIncludingBelowXAxis + labelsExtraHeight}>
+        <svg
+          height={containerHeightIncludingBelowXAxis + labelsExtraHeight}
+          width={totalWidth}
+        >
           <path
             d={points}
             fill='none'
@@ -111,14 +114,16 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
         style={{
           position: 'absolute',
           height: containerHeightIncludingBelowXAxis + labelsExtraHeight,
-          left: 6 - yAxisLabelWidth,
+          left: initialSpacing + 4 - yAxisLabelWidth,
           bottom: 60 + xAxisLabelsVerticalShift, //stepHeight * -0.5 + xAxisThickness,
           width: totalWidth,
           zIndex: lineBehindBars ? -1 : 100000
-          // backgroundColor: 'rgba(200,150,150,0.1)'
         }}
       >
-        <svg height={containerHeightIncludingBelowXAxis + labelsExtraHeight}>
+        <svg
+          height={containerHeightIncludingBelowXAxis + labelsExtraHeight}
+          width={totalWidth}
+        >
           <path
             d={points}
             fill='none'
