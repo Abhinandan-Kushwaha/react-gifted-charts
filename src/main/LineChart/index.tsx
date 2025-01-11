@@ -13,7 +13,8 @@ import {
   useLineChart,
   adjustToOffset,
   LineProperties,
-  lineDataItemNullSafe
+  lineDataItemNullSafe,
+  Linecap
 } from 'gifted-charts-core'
 import BarAndLineChartsWrapper from '../Components/BarAndLineChartsWrapper'
 import { StripAndLabel } from '../Components/common/StripAndLabel'
@@ -189,6 +190,11 @@ export const LineChart = (props: LineChartPropsType) => {
     strokeDashArray3,
     strokeDashArray4,
     strokeDashArray5,
+    strokeLinecap1,
+    strokeLinecap2,
+    strokeLinecap3,
+    strokeLinecap4,
+    strokeLinecap5,
     rotateLabel,
     isAnimated,
     hideDataPoints1,
@@ -860,7 +866,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 !showTextOnFocus || index === selectedIndex ? (
                   <foreignObject
                     height={svgHeight}
-                    width={totalWidth}
+                    width={dataPointLabelWidth}
                     x={
                       initialSpacing +
                       (item.dataPointLabelShiftX ||
@@ -1367,6 +1373,7 @@ export const LineChart = (props: LineChartPropsType) => {
     startOpacity: number,
     endOpacity: number,
     strokeDashArray: Array<number> | undefined | null,
+    strokeLinecap: Linecap,
     showArrow: boolean,
     arrowPoints: any,
     arrowStrokeWidth: any,
@@ -1441,7 +1448,8 @@ export const LineChart = (props: LineChartPropsType) => {
           : `url(#lineGradient)`
         : color
       ).toString(),
-      strokeWidth: currentLineThickness || thickness
+      strokeWidth: currentLineThickness || thickness,
+      strokeLinecap
     }
     if (strokeDashArray) {
       lineSvgPropsOuter.strokeDasharray = strokeDashArray
@@ -1467,7 +1475,8 @@ export const LineChart = (props: LineChartPropsType) => {
                   : `url(#lineGradient${uniqueGradientKey})`
                 : item.color
               ).toString(),
-              strokeWidth: item.strokeWidth
+              strokeWidth: item.strokeWidth,
+              strokeLinecap
             }
             if (
               item.strokeDashArray &&
@@ -1585,6 +1594,7 @@ export const LineChart = (props: LineChartPropsType) => {
     startOpacity: number,
     endOpacity: number,
     strokeDashArray: Array<number> | undefined | null,
+    strokeLinecap: Linecap,
     showArrow: any,
     arrowPoints: any,
     arrowStrokeWidth: any,
@@ -1868,6 +1878,7 @@ export const LineChart = (props: LineChartPropsType) => {
           startOpacity,
           endOpacity,
           strokeDashArray,
+          strokeLinecap,
           showArrow,
           arrowPoints,
           arrowStrokeWidth,
@@ -1907,6 +1918,7 @@ export const LineChart = (props: LineChartPropsType) => {
     startOpacity: number,
     endOpacity: number,
     strokeDashArray: Array<number> | undefined | null,
+    strokeLinecap: Linecap,
     showArrow: any,
     arrowPoints: any,
     arrowStrokeWidth: any,
@@ -1949,6 +1961,7 @@ export const LineChart = (props: LineChartPropsType) => {
           startOpacity,
           endOpacity,
           strokeDashArray,
+          strokeLinecap,
           showArrow,
           arrowPoints,
           arrowStrokeWidth,
@@ -2254,6 +2267,7 @@ export const LineChart = (props: LineChartPropsType) => {
                     set.startOpacity ?? startOpacity1,
                     set.endOpacity ?? endOpacity1,
                     set.strokeDashArray ?? strokeDashArray1,
+                    set.strokeLinecap ?? strokeLinecap1,
                     set.showArrow || props.showArrows,
                     arrowPointsFromSet[index],
                     arrowStrokeWidthsFromSet?.[index],
@@ -2289,6 +2303,7 @@ export const LineChart = (props: LineChartPropsType) => {
                     set.startOpacity ?? startOpacity1,
                     set.endOpacity ?? endOpacity1,
                     set.strokeDashArray ?? strokeDashArray1,
+                    set.strokeLinecap ?? strokeLinecap1,
                     set.showArrow || props.showArrows,
                     arrowPointsFromSet[index],
                     arrowStrokeWidthsFromSet?.[index],
@@ -2328,6 +2343,7 @@ export const LineChart = (props: LineChartPropsType) => {
               startOpacity1,
               endOpacity1,
               strokeDashArray1,
+              strokeLinecap1,
               props.showArrow1 || props.showArrows,
               arrow1Points,
               arrowStrokeWidth1,
@@ -2362,6 +2378,7 @@ export const LineChart = (props: LineChartPropsType) => {
               startOpacity1,
               endOpacity1,
               strokeDashArray1,
+              strokeLinecap1,
               props.showArrow1 || props.showArrows,
               arrow1Points,
               arrowStrokeWidth1,
@@ -2399,6 +2416,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 secondaryLineConfig.startOpacity,
                 secondaryLineConfig.endOpacity,
                 secondaryLineConfig.strokeDashArray,
+                secondaryLineConfig.strokeLinecap,
                 secondaryLineConfig.showArrow,
                 secondaryArrowPoints,
                 secondaryLineConfig.arrowConfig?.strokeWidth,
@@ -2433,6 +2451,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 secondaryLineConfig.startOpacity,
                 secondaryLineConfig.endOpacity,
                 secondaryLineConfig.strokeDashArray,
+                secondaryLineConfig.strokeLinecap,
                 secondaryLineConfig.showArrow,
                 secondaryArrowPoints,
                 secondaryLineConfig.arrowConfig?.strokeWidth,
@@ -2471,6 +2490,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity2,
                 endOpacity2,
                 strokeDashArray2,
+                strokeLinecap2,
                 props.showArrow2 || props.showArrows,
                 arrow2Points,
                 arrowStrokeWidth2,
@@ -2505,6 +2525,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity2,
                 endOpacity2,
                 strokeDashArray2,
+                strokeLinecap2,
                 props.showArrow2 || props.showArrows,
                 arrow2Points,
                 arrowStrokeWidth2,
@@ -2543,6 +2564,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity3,
                 endOpacity3,
                 strokeDashArray3,
+                strokeLinecap3,
                 props.showArrow3 || props.showArrows,
                 arrow3Points,
                 arrowStrokeWidth3,
@@ -2577,6 +2599,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity3,
                 endOpacity3,
                 strokeDashArray3,
+                strokeLinecap3,
                 props.showArrow3 || props.showArrows,
                 arrow3Points,
                 arrowStrokeWidth3,
@@ -2615,6 +2638,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity4,
                 endOpacity4,
                 strokeDashArray4,
+                strokeLinecap4,
                 props.showArrow4 || props.showArrows,
                 arrow4Points,
                 arrowStrokeWidth4,
@@ -2649,6 +2673,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity4,
                 endOpacity4,
                 strokeDashArray4,
+                strokeLinecap4,
                 props.showArrow4 || props.showArrows,
                 arrow4Points,
                 arrowStrokeWidth4,
@@ -2687,6 +2712,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity5,
                 endOpacity5,
                 strokeDashArray5,
+                strokeLinecap5,
                 props.showArrow5 || props.showArrows,
                 arrow5Points,
                 arrowStrokeWidth5,
@@ -2721,6 +2747,7 @@ export const LineChart = (props: LineChartPropsType) => {
                 startOpacity5,
                 endOpacity5,
                 strokeDashArray5,
+                strokeLinecap5,
                 props.showArrow5 || props.showArrows,
                 arrow5Points,
                 arrowStrokeWidth5,
