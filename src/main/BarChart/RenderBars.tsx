@@ -8,8 +8,9 @@ import {
 } from 'gifted-charts-core'
 import AnimatedThreeDBar from '../Components/AnimatedThreeDBar'
 import Tooltip from '../Components/BarSpecificComponents/tooltip'
+import { RenderBarsPropsTypeForWeb } from 'gifted-charts-core/dist/BarChart/types'
 
-interface IRenderBarsPropsTypes extends RenderBarsPropsType {
+interface IRenderBarsPropsTypes extends RenderBarsPropsTypeForWeb {
   yTranslate: number
   scrollToBarRef: RefObject<HTMLDivElement>
   scrollToIndex?: number
@@ -42,6 +43,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     xAxisTextNumberOfLines,
     xAxisLabelsVerticalShift,
     renderTooltip,
+    renderTooltipConditions,
     initialSpacing,
     selectedIndex,
     setSelectedIndex,
@@ -448,16 +450,22 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
               ? item.onContextMenu()
               : props.onContextMenu?.(item, index)
           }}
-          onMouseEnter={() =>
+          onMouseEnter={() => {
             item.onMouseEnter
               ? item.onMouseEnter()
               : props.onMouseEnter?.(item, index)
-          }
-          onMouseLeave={() =>
+            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+              setSelectedIndex(index)
+            }
+          }}
+          onMouseLeave={() => {
             item.onMouseLeave
               ? item.onMouseLeave()
               : props.onMouseLeave?.(item, index)
-          }
+            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+              setSelectedIndex(-1)
+            }
+          }}
           // onLongPress={() => {
           //   item.onLongPress
           //     ? item.onLongPress()
