@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 import {
   useRenderStackBars,
   BarDefaults,
-  StackedBarChartPropsType
+  StackedBarChartPropsTypeForWeb
 } from 'gifted-charts-core'
 import Tooltip from '../Components/BarSpecificComponents/tooltip'
 
-const RenderStackBars = (props: StackedBarChartPropsType) => {
+const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
   const {
     barBackgroundPattern,
     patternId,
@@ -58,7 +58,8 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
     getPosition,
     lowestBarPosition,
     getStackBorderRadii,
-    tooltipProps
+    tooltipProps,
+    renderTooltipConditions
   } = useRenderStackBars({
     ...props,
     secondaryStepHeight,
@@ -158,6 +159,26 @@ const RenderStackBars = (props: StackedBarChartPropsType) => {
               item.onPress()
             } else if (props.onPress) {
               props.onPress(item, index)
+            }
+          }}
+          onMouseEnter={() => {
+            if (item.onMouseEnter) {
+              item.onMouseEnter()
+            } else if (props.onMouseEnter) {
+              props.onMouseEnter(item, index)
+            }
+            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+              setSelectedIndex(index)
+            }
+          }}
+          onMouseLeave={() => {
+            if (item.onMouseLeave) {
+              item.onMouseLeave()
+            } else if (props.onMouseLeave) {
+              props.onMouseLeave(item, index)
+            }
+            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+              setSelectedIndex(-1)
             }
           }}
           // onLongPress={() => {

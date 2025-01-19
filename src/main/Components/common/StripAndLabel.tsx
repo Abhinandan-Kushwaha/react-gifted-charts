@@ -83,7 +83,6 @@ export const StripAndLabel = (props: any) => {
 
       {pointerLabelComponent ? (
         <div
-          // pointerEvents={pointerEvents ?? 'none'}
           style={{
             position: 'absolute',
             left: left,

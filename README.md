@@ -1,6 +1,6 @@
 # react-gifted-charts
 
-ReactJS counterpart of [react-native-gifted-charts](https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts)
+ReactJS counterpart of [react-native-gifted-charts](https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts). An intuitive charting library for Bar, Line, Area, Pie, Donut, Stacked Bar, Population Pyramid and Radar charts in React.
 
 ## Installation 
 
@@ -52,5 +52,5 @@ const data=[ {value:50}, {value:80}, {value:90}, {value:70} ]
 
 ### Tests
 
-Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo. <br />
+Screenshot tests are written in the [react-gifted-charts-test](https://github.com/Abhinandan-Kushwaha/react-gifted-charts-test) repo using [screenshot-test-react](https://www.npmjs.com/package/screenshot-test-react)<br />
 See the [test reports here](https://abhinandan-kushwaha.github.io/react-gifted-charts-test/ss-test/test.html)

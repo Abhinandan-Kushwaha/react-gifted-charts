@@ -51,38 +51,38 @@ export const LineChart = (props: LineChartPropsType) => {
     arrow4Points,
     arrow5Points,
     secondaryArrowPoints,
-    setPointerIndex,
+    // setPointerIndex,
     pointerX,
-    setPointerX,
+    // setPointerX,
     pointerY,
-    setPointerY,
+    // setPointerY,
     pointerItem,
-    setPointerItem,
+    // setPointerItem,
     pointerY2,
-    setPointerY2,
+    // setPointerY2,
     pointerItem2,
-    setPointerItem2,
+    // setPointerItem2,
     pointerY3,
-    setPointerY3,
+    // setPointerY3,
     pointerItem3,
-    setPointerItem3,
+    // setPointerItem3,
     pointerY4,
-    setPointerY4,
+    // setPointerY4,
     pointerItem4,
-    setPointerItem4,
+    // setPointerItem4,
     pointerY5,
-    setPointerY5,
+    // setPointerY5,
     pointerItem5,
-    setPointerItem5,
+    // setPointerItem5,
     pointerYsForDataSet,
-    setPointerYsForDataSet,
+    // setPointerYsForDataSet,
     secondaryPointerY,
-    setSecondaryPointerY,
+    // setSecondaryPointerY,
     secondaryPointerItem,
-    setSecondaryPointerItem,
-    responderStartTime,
-    setResponderStartTime,
-    setResponderActive,
+    // setSecondaryPointerItem,
+    // responderStartTime,
+    // setResponderStartTime,
+    // setResponderActive,
     points,
     points2,
     points3,
@@ -308,7 +308,13 @@ export const LineChart = (props: LineChartPropsType) => {
     focusTogether,
     selectedLineNumber,
     handleFocus,
-    handleUnFocus
+    handleUnFocus,
+    renderTooltip1,
+    renderTooltip2,
+    renderTooltip3,
+    renderTooltip4,
+    renderTooltip5,
+    renderTooltipSecondary
     // oldPoints
   } = useLineChart({ ...props, parentWidth: props.parentWidth ?? screenWidth })
 
@@ -628,8 +634,10 @@ export const LineChart = (props: LineChartPropsType) => {
     isSecondary: any,
     showValuesAsDataPointsText: any,
     spacingArray: number[],
-    key: number
+    key: number,
+    renderTooltip?: Function
   ) => {
+    const focusEnabledLocal = focusEnabled || props.renderTooltip
     const getYOrSecondaryY = isSecondary ? getSecondaryY : getY
     return dataForRender.map((item: lineDataItemNullSafe, index: number) => {
       if (index < startIndex || index > endIndex) return null
@@ -664,7 +672,9 @@ export const LineChart = (props: LineChartPropsType) => {
           item.dataPointHeight ||
           dataPtsHeight
         dataPointsColor =
-          item.focusedDataPointColor || props.focusedDataPointColor || 'orange'
+          item.focusedDataPointColor ||
+          props.focusedDataPointColor ||
+          (focusEnabled && 'orange')
         dataPointsRadius =
           item.focusedDataPointRadius ??
           props.focusedDataPointRadius ??
@@ -724,7 +734,7 @@ export const LineChart = (props: LineChartPropsType) => {
 
       return (
         <Fragment key={index}>
-          {focusEnabled ? (
+          {focusEnabledLocal ? (
             <>
               {key === lastLineNumber - 1 ? (
                 <rect
@@ -738,12 +748,22 @@ export const LineChart = (props: LineChartPropsType) => {
                     handleFocus(index, item, locationY, onStripPress)
                   }}
                   onMouseUp={handleUnFocus}
+                  onMouseMove={(evt) => {
+                    if (!props.renderTooltip) return
+                    console.log('move evt...', evt)
+                    const locationY = evt.nativeEvent.y // Note that we have another property named pageY which can be useful
+                    console.log('locationY..', locationY)
+                    handleFocus(index, item, locationY, onStripPress)
+                  }}
+                  onMouseLeave={() => {
+                    if (props.renderTooltip) handleUnFocus()
+                  }}
                 />
               ) : null}
             </>
           ) : null}
           {item.showStrip ||
-          (focusEnabled && index === selectedIndex && showStripOnFocus) ? (
+          (focusEnabledLocal && index === selectedIndex && showStripOnFocus) ? (
             <line
               x1={initialSpacing + spacing * index - currentStripWidth / 2 - 1}
               y1={y1}
@@ -772,7 +792,7 @@ export const LineChart = (props: LineChartPropsType) => {
                       item.onPress(item, index)
                     } else if (props.onPress) {
                       props.onPress(item, index)
-                    } else if (focusEnabled) {
+                    } else if (focusEnabledLocal) {
                       handleFocus(index, item, 0, onStripPress)
                     }
                   }}
@@ -818,7 +838,7 @@ export const LineChart = (props: LineChartPropsType) => {
                           item.onPress(item, index)
                         } else if (props.onPress) {
                           props.onPress(item, index)
-                        } else if (focusEnabled) {
+                        } else if (focusEnabledLocal) {
                           handleFocus(index, item, 0, onStripPress)
                         }
                       }}
@@ -849,7 +869,7 @@ export const LineChart = (props: LineChartPropsType) => {
                           item.onPress(item, index)
                         } else if (props.onPress) {
                           props.onPress(item, index)
-                        } else if (focusEnabled) {
+                        } else if (focusEnabledLocal) {
                           handleFocus(index, item, 0, onStripPress)
                         }
                       }}
@@ -862,7 +882,7 @@ export const LineChart = (props: LineChartPropsType) => {
                   )}
                 </Fragment>
               )}
-              {dataPointLabelComponent ? (
+              {dataPointLabelComponent || renderTooltip ? (
                 !showTextOnFocus || index === selectedIndex ? (
                   <foreignObject
                     height={svgHeight}
@@ -898,9 +918,12 @@ export const LineChart = (props: LineChartPropsType) => {
                     {showDataPointLabelOnFocus
                       ? index === selectedIndex &&
                         (focusTogether || key == selectedLineNumber)
-                        ? dataPointLabelComponent(item, index)
+                        ? dataPointLabelComponent?.(item, index)
                         : null
-                      : dataPointLabelComponent(item, index)}
+                      : dataPointLabelComponent?.(item, index)}
+                    {index === selectedIndex && key == selectedLineNumber
+                      ? renderTooltip?.(item, index)
+                      : null}
                   </foreignObject>
                 ) : null
               ) : text || item.dataPointText ? (
@@ -1215,7 +1238,8 @@ export const LineChart = (props: LineChartPropsType) => {
               textFontSize,
               startIndex,
               endIndex,
-              isSecondary
+              isSecondary,
+              renderTooltip
             } = set
             return renderDataPoints(
               hideDataPoints ?? hideDataPoints1,
@@ -1233,7 +1257,8 @@ export const LineChart = (props: LineChartPropsType) => {
               isSecondary,
               showValuesAsDataPointsText,
               cumulativeSpacingForSet[index],
-              index
+              index,
+              renderTooltip
             )
           })}
         </>
@@ -1257,7 +1282,8 @@ export const LineChart = (props: LineChartPropsType) => {
           false,
           showValuesAsDataPointsText,
           cumulativeSpacing1,
-          0
+          0,
+          renderTooltip1
         )}
         {points2
           ? renderDataPoints(
@@ -1276,7 +1302,8 @@ export const LineChart = (props: LineChartPropsType) => {
               false,
               showValuesAsDataPointsText,
               cumulativeSpacing2,
-              1
+              1,
+              renderTooltip2
             )
           : null}
         {points3
@@ -1296,7 +1323,8 @@ export const LineChart = (props: LineChartPropsType) => {
               false,
               showValuesAsDataPointsText,
               cumulativeSpacing3,
-              2
+              2,
+              renderTooltip3
             )
           : null}
         {points4
@@ -1316,7 +1344,8 @@ export const LineChart = (props: LineChartPropsType) => {
               false,
               showValuesAsDataPointsText,
               cumulativeSpacing4,
-              3
+              3,
+              renderTooltip4
             )
           : null}
         {points5
@@ -1336,7 +1365,8 @@ export const LineChart = (props: LineChartPropsType) => {
               false,
               showValuesAsDataPointsText,
               cumulativeSpacing5,
-              4
+              4,
+              renderTooltip5
             )
           : null}
         {secondaryPoints
@@ -1356,7 +1386,8 @@ export const LineChart = (props: LineChartPropsType) => {
               true,
               secondaryLineConfig.showValuesAsDataPointsText,
               cumulativeSpacingSecondary,
-              6666
+              6666,
+              renderTooltipSecondary
             )
           : null}
       </>
