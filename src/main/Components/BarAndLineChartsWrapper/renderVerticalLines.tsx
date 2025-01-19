@@ -68,10 +68,10 @@ const RenderVerticalLines = (props: any) => {
           if (verticalLinesSpacing) {
             totalSpacing = verticalLinesSpacing * (index + 1)
           } else {
-            totalSpacing += (data[index].barWidth || barWidth || 30) / 2
+            totalSpacing += (data[index]?.barWidth || barWidth || 30) / 2
             totalSpacing += index ? spacing : 0
             totalSpacing += index
-              ? (data[index - 1].barWidth || barWidth || 30) / 2
+              ? (data[index - 1]?.barWidth || barWidth || 30) / 2
               : 0
           }
 
