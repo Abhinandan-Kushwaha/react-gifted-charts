@@ -1,13 +1,13 @@
 {
   "name": "react-gifted-charts",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "ReactJS counterpart of react-native-gifted-charts. An intuitive charting library for Bar, Line, Area, Pie, Donut, Stacked Bar, Population Pyramid and Radar charts in React",
   "main": "dist/main.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "gifted-charts-core": "0.1.57"
+    "gifted-charts-core": "0.1.58"
   },
   "devDependencies": {
     "@babel/cli": "^7.24.7",

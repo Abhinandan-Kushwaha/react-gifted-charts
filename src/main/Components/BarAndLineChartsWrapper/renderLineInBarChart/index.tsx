@@ -23,10 +23,18 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
     xAxisLabelsVerticalShift,
     selectedIndex,
     containerHeightIncludingBelowXAxis,
-    yAxisOffset
+    yAxisOffset,
+    highlightEnabled,
+    lowlightOpacity
   } = props
 
   const firstBarWidth = data[0].barWidth ?? barWidth
+
+  const opacity = highlightEnabled
+    ? selectedIndex === -1
+      ? 1
+      : lowlightOpacity
+    : 1
 
   const dataPointsProps: DataPointProps = {
     data,
@@ -38,7 +46,8 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
     yAxisLabelWidth,
     spacing,
     selectedIndex,
-    yAxisOffset
+    yAxisOffset,
+    opacity
   }
 
   const specificVerticalLinesProps = {
@@ -86,6 +95,7 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
             d={points}
             fill='none'
             stroke={lineConfig.color}
+            opacity={opacity}
             strokeWidth={lineConfig.thickness}
           />
 
@@ -128,6 +138,7 @@ const RenderLineInBarChart = (props: LineInBarChartPropsType) => {
             d={points}
             fill='none'
             stroke={lineConfig.color}
+            opacity={opacity}
             strokeWidth={lineConfig.thickness}
           />
           {renderSpecificVerticalLines(specificVerticalLinesProps)}

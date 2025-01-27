@@ -87,7 +87,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
         style={(() => {
           let style: React.CSSProperties = {
             position: 'absolute',
-            bottom: 0,
+            bottom: 30,
             width: barWidth,
             overflow: 'hidden',
             transition: `height ${animationDuration / 1000}s`,

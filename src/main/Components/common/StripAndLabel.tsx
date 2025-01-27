@@ -59,7 +59,7 @@ export const StripAndLabel = (props: any) => {
               : containerHeight - pointerStripHeight
           }}
         >
-          <svg>
+          <svg height={containerHeight} width={pointerStripWidth + 2}>
             <line
               stroke={pointerStripColor}
               strokeWidth={pointerStripWidth}

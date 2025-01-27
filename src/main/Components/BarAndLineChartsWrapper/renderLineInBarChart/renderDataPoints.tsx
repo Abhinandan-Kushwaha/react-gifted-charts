@@ -13,7 +13,8 @@ export const renderDataPoints = (props: DataPointProps) => {
     yAxisLabelWidth,
     spacing,
     selectedIndex,
-    yAxisOffset
+    yAxisOffset,
+    opacity
   } = props
   return data.map((item: any, index: number) => {
     if (
@@ -46,6 +47,7 @@ export const renderDataPoints = (props: DataPointProps) => {
             position: 'absolute',
             justifyContent: 'center',
             alignItems: 'center',
+            opacity,
             height: lineConfig.dataPointsHeight,
             width: lineConfig.dataPointsWidth,
             top:
@@ -91,11 +93,13 @@ export const renderDataPoints = (props: DataPointProps) => {
             width={lineConfig.dataPointsWidth}
             height={lineConfig.dataPointsHeight}
             fill={dataPointColor}
+            opacity={opacity}
           />
           {item.dataPointText && (
             <text
               fill={item.textColor || lineConfig.textColor}
               fontSize={item.textFontSize || lineConfig.textFontSize}
+              opacity={opacity}
               x={
                 getXForLineInBar(
                   index,
@@ -144,11 +148,13 @@ export const renderDataPoints = (props: DataPointProps) => {
           )}
           r={dataPointRadius}
           fill={dataPointColor}
+          opacity={opacity}
         />
         {item.dataPointText && (
           <text
             fill={item.textColor || lineConfig.textColor}
             fontSize={item.textFontSize || lineConfig.textFontSize}
+            opacity={opacity}
             x={
               getXForLineInBar(
                 index,

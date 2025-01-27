@@ -126,7 +126,7 @@ const AnimatedThreeDBar = (props: IanimatedBarPropTypes) => {
             : 'hidden',
           height: height + sideWidth / 2,
           transition: isAnimated ? `height ${animationDuration / 1000}s` : ``,
-          bottom: 0,
+          bottom: 30,
           transform: `${
             props.side === 'right' ? 'rotateY(180deg)' : ''
           } translateY(${containerHeight * 1.05 + 28 - props.height}px)`

@@ -1,3 +1,23 @@
+## 🎉 0.0.11
+
+### ✨ Features added-
+
+1. **Highlight**: Added the feature to highlight a particular Bar, Bar-section (in stacked Bar chart) or Line in Bar charts using the below props-
+
+- highlightEnabled
+- highlightedBarIndex
+- lowlightOpacity
+- stackHighlightEnabled
+- highlightedStackIndex 
+
+2. Added **pointer** support to Line, Area, Bar and Stacked Bar charts using the `pointerConfig` prop. See https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/blob/HEAD/docs/LineChart/LineChartProps.md#pointerconfig
+
+<img src='https://raw.githubusercontent.com/Abhinandan-Kushwaha/react-native-gifted-charts/02f8727e4edb952a576caf40a066122eac55f35c/demos/scrollLine.gif' alt='pointer'>
+
+---
+---
+---
+
 ## 🎉 0.0.10
 
 ### ✨ Features added-

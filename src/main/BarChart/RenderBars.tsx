@@ -59,7 +59,10 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     labelsDistanceFromXaxis = 0,
     secondaryXAxis,
     secondaryNoOfSectionsBelowXAxis,
-    barMarginBottom = 0
+    barMarginBottom = 0,
+    highlightEnabled,
+    highlightedBarIndex,
+    lowlightOpacity
   } = props
 
   const { barHeight, tooltipProps } = useRenderBars(props)
@@ -292,6 +295,13 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
 
   let barWrapperStyle: React.CSSProperties = {
     // overflow: 'visible',
+    opacity: highlightEnabled
+      ? highlightedBarIndex === -1
+        ? 1
+        : highlightedBarIndex === index
+        ? 1
+        : lowlightOpacity
+      : 1,
     marginBottom: 60 + barMarginBottom + xAxisLabelsVerticalShift,
     width: commonPropsFor2dAnd3dBars.barWidth,
     height: barHeight,
@@ -362,7 +372,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
               position: 'absolute',
               width: props.xAxisIndicesHeight,
               height: props.xAxisIndicesWidth,
-              bottom: barHeight - (containerHeight ?? 200) * 1.05 - 31, //props.xAxisIndicesHeight / -2,
+              bottom: barHeight - (containerHeight ?? 200) * 1.05, //props.xAxisIndicesHeight / -2,
               left:
                 (commonPropsFor2dAnd3dBars.barWidth - props.xAxisIndicesWidth) /
                 2,
@@ -454,7 +464,10 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             item.onMouseEnter
               ? item.onMouseEnter()
               : props.onMouseEnter?.(item, index)
-            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+            if (
+              (renderTooltip && renderTooltipConditions.includes('onHover')) ||
+              highlightEnabled
+            ) {
               setSelectedIndex(index)
             }
           }}
@@ -462,7 +475,10 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
             item.onMouseLeave
               ? item.onMouseLeave()
               : props.onMouseLeave?.(item, index)
-            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+            if (
+              (renderTooltip && renderTooltipConditions.includes('onHover')) ||
+              highlightEnabled
+            ) {
               setSelectedIndex(-1)
             }
           }}
