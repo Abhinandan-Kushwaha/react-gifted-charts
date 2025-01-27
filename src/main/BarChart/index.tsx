@@ -31,6 +31,13 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     pointerConfig,
     pointerColor,
     pointerX,
+    setPointerX,
+    setPointerY,
+    setPointerIndex,
+    setPointerItem,
+    maxValue,
+    persistPointer,
+    pointerVanishDelay,
     pointerComponent,
     pointerHeight,
     pointerRadius,
@@ -54,7 +61,7 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     data,
     containerHeightIncludingBelowXAxis,
     extendedContainerHeight,
-    totalWidth: totalWidthPre,
+    totalWidth,
     stripBehindBars,
     noOfSectionsBelowXAxis,
     stepHeight,
@@ -73,7 +80,11 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     autoShiftLabels,
     getPropsCommonForBarAndStack,
     barAndLineChartsWrapperProps,
-    autoShiftLabelsForNegativeStacks
+    autoShiftLabelsForNegativeStacks,
+    selectedStackIndex,
+    setSelectedStackIndex,
+    barWidth,
+    spacing
   } = useBarChart({
     ...props,
     parentWidth: props.parentWidth ?? window.innerWidth
@@ -169,68 +180,122 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
     })
   }
 
-  const totalWidth = totalWidthPre - 200
+  // const totalWidth = totalWidthPre - 200
 
   const yTranslate = (containerHeight ?? 200) * 1.05 + 28 //yAxisExtraHeightAtTop
 
   const contentContainerStyle: React.CSSProperties = {
     position: 'absolute',
     height: containerHeightIncludingBelowXAxis,
-    bottom: 98 + labelsExtraHeight,
+    bottom: 68 + labelsExtraHeight,
     paddingLeft: initialSpacing,
-    width: totalWidth,
+    width: totalWidth - initialSpacing - 40,
     display: 'flex'
   }
 
-  const renderChartContent = () => {
-    if (pointerConfig) {
-      return (
-        <div style={contentContainerStyle}>
-          {pointerX > 0 && stripBehindBars ? (
-            <div
-              // pointerEvents={pointerEvents ?? 'none'}
-              style={{
-                position: 'absolute',
-                height:
-                  extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
-                bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
-                width: totalWidth
-              }}
-            >
-              {renderStripAndLabel(null)}
-            </div>
-          ) : null}
-          {renderChart()}
-          {pointerX > 0 ? (
-            <div
-              // pointerEvents={pointerEvents ?? 'none'}
-              style={{
-                position: 'absolute',
-                height:
-                  extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
-                bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
-                width: totalWidth,
-                zIndex: 20
-              }}
-            >
-              {!stripOverPointer &&
-                !stripBehindBars &&
-                renderStripAndLabel(null)}
-              {renderPointer(1)}
-              {stripOverPointer &&
-                !stripBehindBars &&
-                renderStripAndLabel(null)}
-              {
-                pointerLabelComponent &&
-                  renderStripAndLabel(pointerLabelComponent) // no matter what, pointerLabelComponent will be rendered at last -> over the chart content
-              }
-            </div>
-          ) : null}
-        </div>
+  const divRef = useRef<HTMLDivElement>(null)
+  const divOffsetX = divRef.current?.getBoundingClientRect().x ?? 0
+
+  const activatePointer = (x: number) => {
+    let factor = (x - initialSpacing - barWidth / 2) / (spacing + barWidth)
+    factor = Math.round(factor)
+    factor = Math.min(factor, data.length - 1)
+    factor = Math.max(factor, 0)
+    let z =
+      initialSpacing +
+      (spacing + barWidth) * factor -
+      (pointerRadius || pointerWidth / 2) +
+      barWidth / 2
+    setPointerX(z)
+    setPointerIndex(factor)
+
+    let item, y
+    item = (stackData ?? data)[factor]
+    let stackSum = 0
+    if ('stacks' in item) {
+      stackSum = item.stacks.reduce(
+        (acc: number, stack: any) => acc + (stack.value ?? 0),
+        0
       )
-    } else {
-      return <div style={contentContainerStyle}>{renderChart()}</div>
     }
+    y =
+      containerHeight -
+      ((stackSum ?? item.value) * containerHeight) / maxValue -
+      (pointerRadius || pointerHeight / 2) +
+      10
+    setPointerY(y)
+    setPointerItem(item)
+    pointerConfig?.onResponderGrant?.()
+  }
+
+  const renderChartContent = () => {
+    return (
+      <div ref={divRef}>
+        {pointerConfig ? (
+          <div
+            onMouseMove={(evt) => {
+              const x = (evt.clientX ?? 0) - divOffsetX
+              activatePointer(x)
+            }}
+            onMouseLeave={() => {
+              if (!persistPointer)
+                setTimeout(() => setPointerX(0), pointerVanishDelay)
+            }}
+            style={contentContainerStyle}
+          >
+            {pointerX > 0 && stripBehindBars ? (
+              <div
+                // pointerEvents={pointerEvents ?? 'none'}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  // backgroundColor: 'rgba(0,0,0,0.2)',
+                  height:
+                    extendedContainerHeight +
+                    noOfSectionsBelowXAxis * stepHeight,
+                  bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
+                  width: totalWidth,
+                  pointerEvents: 'none'
+                }}
+              >
+                {renderStripAndLabel(null)}
+              </div>
+            ) : null}
+            {renderChart()}
+            {pointerX > 0 ? (
+              <div
+                // pointerEvents={pointerEvents ?? 'none'}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  height:
+                    extendedContainerHeight +
+                    noOfSectionsBelowXAxis * stepHeight,
+                  bottom: xAxisLabelsVerticalShift + labelsExtraHeight,
+                  width: totalWidth,
+                  zIndex: 20,
+                  pointerEvents: 'none'
+                }}
+              >
+                {!stripOverPointer &&
+                  !stripBehindBars &&
+                  renderStripAndLabel(null)}
+                {renderPointer(1)}
+                {stripOverPointer &&
+                  !stripBehindBars &&
+                  renderStripAndLabel(null)}
+                {
+                  pointerLabelComponent &&
+                    renderStripAndLabel(pointerLabelComponent) // no matter what, pointerLabelComponent will be rendered at last -> over the chart content
+                }
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div style={contentContainerStyle}>{renderChart()}</div>
+        )}
+      </div>
+    )
   }
 
   const renderChart = () => {
@@ -248,6 +313,8 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
             stackBorderBottomLeftRadius={props.stackBorderBottomLeftRadius}
             stackBorderBottomRightRadius={props.stackBorderBottomRightRadius}
             autoShiftLabelsForNegativeStacks={autoShiftLabelsForNegativeStacks}
+            selectedStackIndex={selectedStackIndex}
+            setSelectedStackIndex={setSelectedStackIndex}
             // yTranslate={yTranslate}
             {...getPropsCommonForBarAndStack(item, index)}
           />

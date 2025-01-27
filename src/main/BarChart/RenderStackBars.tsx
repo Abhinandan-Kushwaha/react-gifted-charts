@@ -38,7 +38,13 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
     secondaryNegativeStepHeight,
     secondaryNegativeStepValue,
     containerHeightIncludingBelowXAxis,
-    barMarginBottom
+    highlightEnabled,
+    highlightedBarIndex,
+    lowlightOpacity,
+    barMarginBottom,
+    stackHighlightEnabled,
+    selectedStackIndex,
+    setSelectedStackIndex
   } = props
   const {
     containsNegativeValue,
@@ -167,7 +173,11 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
             } else if (props.onMouseEnter) {
               props.onMouseEnter(item, index)
             }
-            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+            if (
+              !stackHighlightEnabled &&
+              renderTooltip &&
+              renderTooltipConditions.includes('onHover')
+            ) {
               setSelectedIndex(index)
             }
           }}
@@ -177,7 +187,11 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
             } else if (props.onMouseLeave) {
               props.onMouseLeave(item, index)
             }
-            if (renderTooltip && renderTooltipConditions.includes('onHover')) {
+            if (
+              !stackHighlightEnabled &&
+              renderTooltip &&
+              renderTooltipConditions.includes('onHover')
+            ) {
               setSelectedIndex(-1)
             }
           }}
@@ -197,7 +211,7 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
           // }}
           style={{
             position: 'relative',
-            top: (containerHeight ?? 200) * 1.05 - totalHeight + 28,
+            top: (containerHeight ?? 200) * 1.05 - totalHeight - 2,
             width: item.stacks[0].barWidth || props.barWidth || 30,
             height: '100%',
             borderTopLeftRadius:
@@ -262,6 +276,11 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
                     props.color ||
                     'black'
                   ).toString(),
+                  opacity: stackHighlightEnabled
+                    ? selectedStackIndex === index || selectedStackIndex === -1
+                      ? 1
+                      : lowlightOpacity
+                    : 1,
                   backgroundImage: props.showGradient
                     ? `linear-gradient(${
                         stackItem.gradientColor ||
@@ -278,6 +297,16 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
                   borderWidth: barBorderWidth ?? 0,
                   borderColor: barBorderColor.toString(),
                   ...borderRadii
+                }}
+                onMouseEnter={() => {
+                  if (stackHighlightEnabled) {
+                    setSelectedStackIndex(index)
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (stackHighlightEnabled) {
+                    setSelectedStackIndex(-1)
+                  }
                 }}
               >
                 {/* {stackItem.showGradient ||
@@ -384,7 +413,7 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
         style={{
           position: 'absolute',
           left: leftSpacing,
-          bottom: (containerHeight ?? 200) - height + 113,
+          bottom: (containerHeight ?? 200) - height + 10,
           height: height,
           transition: `height ${animationDuration / 1000}s`
           // overflow: 'hidden'
@@ -409,7 +438,14 @@ const RenderStackBars = (props: StackedBarChartPropsTypeForWeb) => {
             // marginBottom: -60 + xAxisLabelsVerticalShift,
             width: item.stacks[0].barWidth || props.barWidth || 30,
             height: totalHeight,
-            marginRight: spacing
+            marginRight: spacing,
+            opacity: highlightEnabled
+              ? highlightedBarIndex === -1
+                ? 1
+                : highlightedBarIndex === index
+                ? 1
+                : lowlightOpacity
+              : 1
           }
 
           if (props.pointerConfig) {

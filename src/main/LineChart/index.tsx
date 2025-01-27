@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { screenWidth } from '../utils'
 import {
   getSegmentedPathObjects,
@@ -51,35 +51,37 @@ export const LineChart = (props: LineChartPropsType) => {
     arrow4Points,
     arrow5Points,
     secondaryArrowPoints,
-    // setPointerIndex,
+    setPointerIndex,
     pointerX,
-    // setPointerX,
+    setPointerX,
     pointerY,
-    // setPointerY,
+    setPointerY,
     pointerItem,
-    // setPointerItem,
+    setPointerItem,
     pointerY2,
-    // setPointerY2,
+    setPointerY2,
     pointerItem2,
-    // setPointerItem2,
+    setPointerItem2,
     pointerY3,
-    // setPointerY3,
+    setPointerY3,
     pointerItem3,
-    // setPointerItem3,
+    setPointerItem3,
     pointerY4,
-    // setPointerY4,
+    setPointerY4,
     pointerItem4,
-    // setPointerItem4,
+    setPointerItem4,
     pointerY5,
-    // setPointerY5,
+    setPointerY5,
     pointerItem5,
-    // setPointerItem5,
+    setPointerItem5,
     pointerYsForDataSet,
-    // setPointerYsForDataSet,
+    setPointerYsForDataSet,
     secondaryPointerY,
-    // setSecondaryPointerY,
+    setSecondaryPointerY,
     secondaryPointerItem,
-    // setSecondaryPointerItem,
+    setSecondaryPointerItem,
+    setPointerItemsForSet,
+    setSecondaryPointerItemsForSet,
     // responderStartTime,
     // setResponderStartTime,
     // setResponderActive,
@@ -750,9 +752,7 @@ export const LineChart = (props: LineChartPropsType) => {
                   onMouseUp={handleUnFocus}
                   onMouseMove={(evt) => {
                     if (!props.renderTooltip) return
-                    console.log('move evt...', evt)
                     const locationY = evt.nativeEvent.y // Note that we have another property named pageY which can be useful
-                    console.log('locationY..', locationY)
                     handleFocus(index, item, locationY, onStripPress)
                   }}
                   onMouseLeave={() => {
@@ -1004,14 +1004,14 @@ export const LineChart = (props: LineChartPropsType) => {
       return dataSet?.map((set, index) => {
         const pIndex = barAndLineChartsWrapperProps.pointerIndex
         pointerItemLocal = set.data[pIndex]
-        pointerYLocal = pointerYsForDataSet[index]
+        pointerYLocal = pointerYsForDataSet[index] + xAxisThickness - 10 // -10 for web only
         pointerColorLocal =
           pointerConfig?.pointerColorsForDataSet?.[index] ?? pointerColor
         return (
           <Fragment key={'dSetPts' + index}>
             {Pointer({
               pointerX,
-              pointerYLocal: pointerYLocal + xAxisThickness,
+              pointerYLocal,
               pointerComponent,
               pointerHeight,
               pointerRadius,
@@ -1031,7 +1031,9 @@ export const LineChart = (props: LineChartPropsType) => {
     // 6 is for secondaryData
     if (lineNumber === 6 && hideSecondaryPointer) return
 
-    let pointerItemLocal, pointerYLocal, pointerColorLocal
+    let pointerItemLocal,
+      pointerYLocal = 0,
+      pointerColorLocal
     switch (lineNumber) {
       case 1:
         pointerItemLocal = pointerItem
@@ -1064,6 +1066,8 @@ export const LineChart = (props: LineChartPropsType) => {
         pointerColorLocal = pointerConfig?.secondaryPointerColor || pointerColor
         break
     }
+
+    pointerYLocal += xAxisThickness - 10 // -10 for web only
 
     return Pointer({
       pointerX,
@@ -1214,12 +1218,6 @@ export const LineChart = (props: LineChartPropsType) => {
       </div>
     )
   }
-
-  // const oldPoints = usePrevious(points);
-  // const oldFillPoints = usePrevious(fillPoints);
-
-  // console.log('oldPoints---->>>>',oldPoints)
-  // console.log('points............',points)
 
   const renderDataPointsForEachLine = () => {
     if (dataSet && pointsFromSet.length) {
@@ -1427,18 +1425,6 @@ export const LineChart = (props: LineChartPropsType) => {
     showValuesAsDataPointsText: any,
     spacingArray: number[]
   ) => {
-    // console.log('oldPoints---->', oldPoints)
-    // console.log('points---->', points)
-    // console.log(' = ',oldPoints === points)
-    // const shouldAnimate = animateOnDataChange && prevPoints
-
-    //   const animatedTag = <animate
-    //   dur="1s"
-    //   attributeName='d'
-    //   values={`${oldPoints};${points}`}
-    //   fill='freeze'
-    // />
-
     if (!points) return null
     const uniqueGradientKey = (key ?? -1).toString() + Math.random()
     const isNthAreaChart = getIsNthAreaChart(key ?? 0)
@@ -1573,8 +1559,8 @@ export const LineChart = (props: LineChartPropsType) => {
         {renderSpecificVerticalLines(data4, cumulativeSpacing4)}
         {renderSpecificVerticalLines(data5, cumulativeSpacing5)}
 
-        {dataSet?.map((set) =>
-          renderSpecificVerticalLines(set?.data, cumulativeSpacingForSet)
+        {dataSet?.map((set, index) =>
+          renderSpecificVerticalLines(set?.data, cumulativeSpacingForSet[index])
         ) ?? null}
 
         {/***  !!! Here it's done thrice intentionally, trying to make it to only 1 breaks things !!!  ***/}
@@ -1611,6 +1597,118 @@ export const LineChart = (props: LineChartPropsType) => {
         )}
       </svg>
     )
+  }
+
+  const activatePointers = (x: number) => {
+    // const divOffsetX = divRef.current?.getBoundingClientRect().x ?? 0
+    let factor = (x - initialSpacing - 40) / spacing // getClosestValueFromSpacingArray(cumulativeSpacing1,x-initialSpacing)
+    factor = Math.round(factor)
+    factor = Math.min(factor, (data0 ?? data).length - 1)
+    factor = Math.max(factor, 0)
+    let item, y
+    item = (data0 ?? data)[factor]
+    if (!item.hidePointer) {
+      let z =
+        getX(
+          dataSet?.length ? cumulativeSpacingForSet[0] : cumulativeSpacing1,
+          factor
+        ) -
+        (pointerRadius || pointerWidth / 2) -
+        1
+      setPointerX(Math.max(0.1, z)) // 0.1 is to avoid pointer going out of the chart, See https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/925
+      setPointerIndex(factor)
+      y =
+        containerHeight -
+        (item.value * containerHeight) / maxValue -
+        (pointerRadius || pointerHeight / 2) +
+        10
+      setPointerY(y)
+      setPointerItem(item)
+    }
+    if (data2 && data2.length) {
+      item = data2[factor]
+      if (item && !item.hidePointer) {
+        y =
+          containerHeight -
+          (item.value * containerHeight) / maxValue -
+          (pointerRadius || pointerHeight / 2) +
+          10
+        setPointerY2(y)
+        setPointerItem2(item)
+      }
+    }
+    if (data3 && data3.length) {
+      item = data3[factor]
+      if (item && !item.hidePointer) {
+        y =
+          containerHeight -
+          (item.value * containerHeight) / maxValue -
+          (pointerRadius || pointerHeight / 2) +
+          10
+        setPointerY3(y)
+        setPointerItem3(item)
+      }
+    }
+    if (data4 && data4.length) {
+      item = data4[factor]
+      if (item && !item.hidePointer) {
+        y =
+          containerHeight -
+          (item.value * containerHeight) / maxValue -
+          (pointerRadius || pointerHeight / 2) +
+          10
+        setPointerY4(y)
+        setPointerItem4(item)
+      }
+    }
+    if (data5 && data5.length) {
+      item = data5[factor]
+      if (item && !item.hidePointer) {
+        y =
+          containerHeight -
+          (item.value * containerHeight) / maxValue -
+          (pointerRadius || pointerHeight / 2) +
+          10
+        setPointerY5(y)
+        setPointerItem5(item)
+      }
+    }
+    if (secondaryData?.length) {
+      item = secondaryData[factor]
+      if (item) {
+        y =
+          containerHeight -
+          (item.value * containerHeight) / secondaryMaxValue -
+          (pointerRadius || pointerHeight / 2) +
+          10
+        setSecondaryPointerY(y)
+        // @ts-ignore
+        setSecondaryPointerItem(item)
+      }
+    }
+    if (dataSet?.length) {
+      const pointerItemsForSetLocal: lineDataItem[] = []
+      const secondaryPointerItemsForSetLocal: lineDataItem[] = []
+      const ysForDataSet = dataSet.map((set) => {
+        const item = set.data[factor]
+        if (set.isSecondary) {
+          secondaryPointerItemsForSetLocal.push(item)
+        } else {
+          pointerItemsForSetLocal.push(item)
+        }
+        const y = item
+          ? containerHeight -
+            (item.value * containerHeight) /
+              (set.isSecondary ? secondaryMaxValue : maxValue) -
+            (pointerRadius || pointerHeight / 2) +
+            10
+          : 0
+        return y
+      })
+      setPointerItemsForSet(pointerItemsForSetLocal)
+      setSecondaryPointerItemsForSet(secondaryPointerItemsForSetLocal)
+      setPointerYsForDataSet(ysForDataSet)
+    }
   }
 
   const renderLine = (
@@ -1651,252 +1749,20 @@ export const LineChart = (props: LineChartPropsType) => {
     return (
       <div
         key={key ?? 0}
-        // onStartShouldSetResponder={evt => (pointerConfig ? true : false)}
-        // onMoveShouldSetResponder={evt => (pointerConfig ? true : false)}
-        // onResponderGrant={evt => {
-        //   if (!pointerConfig) return;
-        //   setResponderStartTime(evt.timeStamp);
-        //   if (activatePointersOnLongPress) {
-        //     return;
-        //   }
-        //   let x = evt.nativeEvent.locationX;
-        //   if (
-        //     !activatePointersOnLongPress &&
-        //     x > (props.width || Dimensions.get('window').width)
-        //   )
-        //     return;
-        //   let factor = (x - initialSpacing) / spacing;
-        //   factor = Math.round(factor);
-        //   factor = Math.min(factor, (data0 ?? data).length - 1);
-        //   factor = Math.max(factor, 0);
-        //   let z =
-        //     initialSpacing +
-        //     spacing * factor -
-        //     (pointerRadius || pointerWidth / 2) -
-        //     1;
-        //   setPointerX(z);
-        //   setPointerIndex(factor);
-        //   let item, y;
-        //   item = (data0 ?? data)[factor];
-        //   y =
-        //     containerHeight -
-        //     (item.value * containerHeight) / maxValue -
-        //     (pointerRadius || pointerHeight / 2) +
-        //     10;
-        //   setPointerY(y);
-        //   setPointerItem(item);
-        //   if (data2 && data2.length) {
-        //     item = data2[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY2(y);
-        //       setPointerItem2(item);
-        //     }
-        //   }
-        //   if (data3 && data3.length) {
-        //     item = data3[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY3(y);
-        //       setPointerItem3(item);
-        //     }
-        //   }
-        //   if (data4 && data4.length) {
-        //     item = data4[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY4(y);
-        //       setPointerItem4(item);
-        //     }
-        //   }
-        //   if (data5 && data5.length) {
-        //     item = data5[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY5(y);
-        //       setPointerItem5(item);
-        //     }
-        //   }
-        //   if (secondaryData?.length) {
-        //     item = secondaryData[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / secondaryMaxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setSecondaryPointerY(y);
-        //       setSecondaryPointerItem(item);
-        //     }
-        //   }
-        //    if (dataSet?.length) {
-        //      if (dataSet[0].data[factor]) {
-        //        const ysForDataSet = dataSet.map(set => {
-        //        const item = set.data[factor];
-        //        const y = item
-        //          ? containerHeight -
-        //          (item.value * containerHeight) / maxValue -
-        //          (pointerRadius || pointerHeight / 2) +
-        //          10
-        //        : 0;
-        //        return y;
-        //      });
-        //      setPointerYsForDataSet(ysForDataSet);
-        //    }
-        //  }
-        // }}
-        // onResponderMove={evt => {
-        //   if (!pointerConfig) return;
-        //   if (
-        //     activatePointersOnLongPress &&
-        //     evt.timeStamp - responderStartTime < activatePointersDelay
-        //   ) {
-        //     return;
-        //   } else {
-        //     setResponderActive(true);
-        //   }
-        //   let x = evt.nativeEvent.locationX;
-        //   if (
-        //     !activatePointersOnLongPress &&
-        //     x > (props.width || Dimensions.get('window').width)
-        //   )
-        //     return;
-        //   let factor = (x - initialSpacing) / spacing;
-        //   factor = Math.round(factor);
-        //   factor = Math.min(factor, (data0 ?? data).length - 1);
-        //   factor = Math.max(factor, 0);
-        //   let z =
-        //     initialSpacing +
-        //     spacing * factor -
-        //     (pointerRadius || pointerWidth / 2) -
-        //     1;
-        //   let item, y;
-        //   setPointerX(z);
-        //   setPointerIndex(factor);
-        //   item = (data0 ?? data)[factor];
-        //   y =
-        //     containerHeight -
-        //     (item.value * containerHeight) / maxValue -
-        //     (pointerRadius || pointerHeight / 2) +
-        //     10;
-        //   setPointerY(y);
-        //   setPointerItem(item);
-        //   if (data2 && data2.length) {
-        //     item = data2[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY2(y);
-        //       setPointerItem2(item);
-        //     }
-        //   }
-        //   if (data3 && data3.length) {
-        //     item = data3[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY3(y);
-        //       setPointerItem3(item);
-        //     }
-        //   }
-        //   if (data4 && data4.length) {
-        //     item = data4[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY4(y);
-        //       setPointerItem4(item);
-        //     }
-        //   }
-        //   if (data5 && data5.length) {
-        //     item = data5[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setPointerY5(y);
-        //       setPointerItem5(item);
-        //     }
-        //   }
-        //   if (secondaryData?.length) {
-        //     item = secondaryData[factor];
-        //     if (item) {
-        //       y =
-        //         containerHeight -
-        //         (item.value * containerHeight) / secondaryMaxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10;
-        //       setSecondaryPointerY(y);
-        //       setSecondaryPointerItem(item);
-        //     }
-        //   }
-        //   if (dataSet?.length) {
-        //     const ysForDataSet = dataSet.map(set => {
-        //       const item = set.data[factor];
-        //       const y = item
-        //         ? containerHeight -
-        //         (item.value * containerHeight) / maxValue -
-        //         (pointerRadius || pointerHeight / 2) +
-        //         10
-        //        : 0;
-        //       return y;
-        //     });
-        //     setPointerYsForDataSet(ysForDataSet);
-        //   }
-        // }}
-        // // onResponderReject={evt => {
-        // //   console.log('evt...reject.......',evt);
-        // // }}
-        // onResponderEnd={evt => {
-        //   // console.log('evt...end.......',evt);
-        //   setResponderStartTime(0);
-        //   setPointerIndex(-1);
-        //   setResponderActive(false);
-        //   if (!persistPointer)
-        //     setTimeout(() => setPointerX(0), pointerVanishDelay);
-        // }}
-        // onResponderTerminationRequest={evt => false}
-        // // onResponderTerminate={evt => {
-        // //   console.log('evt...terminate.......',evt);
-        // // }}
-        // // onResponderRelease={evt => {
-        // //   setResponderStartTime(0);
-        // //   setResponderActive(false);
-        // //   setTimeout(() => setPointerX(0), pointerVanishDelay);
-        // // }}
         style={{
           ...svgWrapperViewStyle,
           width: totalWidth,
           height: containerHeightIncludingBelowXAxis,
           zIndex
           // left:8,
+        }}
+        onMouseMove={(evt) => {
+          const x = (evt.clientX ?? 0) - divOffsetX + 40
+          activatePointers(x)
+        }}
+        onMouseLeave={() => {
+          if (!persistPointer)
+            setTimeout(() => setPointerX(0), pointerVanishDelay)
         }}
       >
         {lineSvgComponent(
@@ -1981,6 +1847,14 @@ export const LineChart = (props: LineChartPropsType) => {
           zIndex
           // left:8,
         }}
+        onMouseMove={(evt) => {
+          const x = (evt.clientX ?? 0) - divOffsetX + 40
+          activatePointers(x)
+        }}
+        onMouseLeave={() => {
+          if (!persistPointer)
+            setTimeout(() => setPointerX(0), pointerVanishDelay)
+        }}
       >
         {lineSvgComponent(
           points,
@@ -2019,252 +1893,6 @@ export const LineChart = (props: LineChartPropsType) => {
     )
   }
 
-  // const renderAnimatedLine = (
-  //   containerHeightIncludingBelowXAxis: number,
-  //   zIndex: number,
-  //   points: any,
-  //   animatedWidth: any,
-  //   currentLineThickness: number | undefined,
-  //   color: string,
-  //   fillPoints: any,
-  //   startFillColor: string,
-  //   endFillColor: string,
-  //   startOpacity: number,
-  //   endOpacity: number,
-  //   strokeDashArray: Array<number> | undefined | null,
-  //   showArrow: any,
-  //   arrowPoints: any,
-  //   arrowStrokeWidth: any,
-  //   arrowStrokeColor: any,
-  //   arrowFillColor: any,
-  //   hideDataPoints: any,
-  //   paramsData: any,
-  //   propsData: any,
-  //   dataPointsShape: any,
-  //   dataPointsWidth: any,
-  //   dataPointsHeight: any,
-  //   dataPointsColor: any,
-  //   dataPointsRadius: any,
-  //   textColor: any,
-  //   textFontSize: any,
-  //   startIndex: any,
-  //   endIndex: any,
-  //   isSecondary: any,
-  //   showValuesAsDataPointsText: any,
-  //   key?: number
-  // ) =>
-  //   renderLine(
-  //     zIndex,
-  //     points,
-  //     currentLineThickness,
-  //     color,
-  //     fillPoints,
-  //     startFillColor,
-  //     endFillColor,
-  //     startOpacity,
-  //     endOpacity,
-  //     strokeDashArray,
-  //     showArrow,
-  //     arrowPoints,
-  //     arrowStrokeWidth,
-  //     arrowStrokeColor,
-  //     arrowFillColor,
-  //     hideDataPoints,
-  //     paramsData,
-  //     propsData,
-  //     dataPointsShape,
-  //     dataPointsWidth,
-  //     dataPointsHeight,
-  //     dataPointsColor,
-  //     dataPointsRadius,
-  //     textColor,
-  //     textFontSize,
-  //     startIndex,
-  //     endIndex,
-  //     isSecondary,
-  //     showValuesAsDataPointsText,
-  //     key
-  //   )
-
-  // const renderAnimatedLine = (
-  //   zIndex: number,
-  //   points: any,
-  //   animatedWidth: any,
-  //   currentLineThickness: number | undefined,
-  //   color: ColorValue,
-  //   fillPoints: any,
-  //   startFillColor: string,
-  //   endFillColor: string,
-  //   startOpacity: number,
-  //   endOpacity: number,
-  //   strokeDashArray: Array<number> | undefined | null,
-  //   showArrow,
-  //   arrowPoints,
-  //   arrowStrokeWidth,
-  //   arrowStrokeColor,
-  //   arrowFillColor,
-  //   key?: number,
-  // ) => {
-  //   return (
-  //     <Animated.View
-  //       key={key ?? 0}
-  //       onStartShouldSetResponder={evt => (pointerConfig ? true : false)}
-  //       onMoveShouldSetResponder={evt => (pointerConfig ? true : false)}
-  //       onResponderGrant={evt => {
-  //         if (!pointerConfig) return;
-  //         setResponderStartTime(evt.timeStamp);
-  //         if (activatePointersOnLongPress) {
-  //           return;
-  //         }
-  //         let x = evt.nativeEvent.locationX;
-  //         if (
-  //           !activatePointersOnLongPress &&
-  //           x > (props.width || Dimensions.get('window').width)
-  //         )
-  //           return;
-  //       activatePointers(x);
-  //       }}
-  //       onResponderMove={evt => {
-  //         if (!pointerConfig) return;
-  //         if (
-  //           activatePointersOnLongPress &&
-  //           evt.timeStamp - responderStartTime < activatePointersDelay
-  //         ) {
-  //           return;
-  //         } else {
-  //           setResponderActive(true);
-  //         }
-  //         let x = evt.nativeEvent.locationX;
-  //         if (
-  //           !activatePointersOnLongPress &&
-  //           x > (props.width || Dimensions.get('window').width)
-  //         )
-  //           return;
-  //         let factor = (x - initialSpacing) / spacing;
-  //         factor = Math.round(factor);
-  //         factor = Math.min(factor, (data0 ?? data).length - 1);
-  //         factor = Math.max(factor, 0);
-  //         let z =
-  //           initialSpacing +
-  //           spacing * factor -
-  //           (pointerRadius || pointerWidth / 2) -
-  //           1;
-  //         let item, y;
-  //         setPointerX(z);
-  //         setPointerIndex(factor);
-  //         item = (data0 ?? data)[factor];
-  //         y =
-  //           containerHeight -
-  //           (item.value * containerHeight) / maxValue -
-  //           (pointerRadius || pointerHeight / 2) +
-  //           10;
-  //         setPointerY(y);
-  //         setPointerItem(item);
-  //         if (data2 && data2.length) {
-  //           item = data2[factor];
-  //           if (item) {
-  //             y =
-  //               containerHeight -
-  //               (item.value * containerHeight) / maxValue -
-  //               (pointerRadius || pointerHeight / 2) +
-  //               10;
-  //             setPointerY2(y);
-  //             setPointerItem2(item);
-  //           }
-  //         }
-  //         if (data3 && data3.length) {
-  //           item = data3[factor];
-  //           if (item) {
-  //             y =
-  //               containerHeight -
-  //               (item.value * containerHeight) / maxValue -
-  //               (pointerRadius || pointerHeight / 2) +
-  //               10;
-  //             setPointerY3(y);
-  //             setPointerItem3(item);
-  //           }
-  //         }
-  //         if (data4 && data4.length) {
-  //           item = data4[factor];
-  //           if (item) {
-  //             y =
-  //               containerHeight -
-  //               (item.value * containerHeight) / maxValue -
-  //               (pointerRadius || pointerHeight / 2) +
-  //               10;
-  //             setPointerY4(y);
-  //             setPointerItem4(item);
-  //           }
-  //         }
-  //         if (data5 && data5.length) {
-  //           item = data5[factor];
-  //           if (item) {
-  //             y =
-  //               containerHeight -
-  //               (item.value * containerHeight) / maxValue -
-  //               (pointerRadius || pointerHeight / 2) +
-  //               10;
-  //             setPointerY5(y);
-  //             setPointerItem5(item);
-  //           }
-  //         }
-  //         if (secondaryData?.length) {
-  //           item = secondaryData[factor];
-  //           if (item) {
-  //             y =
-  //               containerHeight -
-  //               (item.value * containerHeight) / maxValue -
-  //               (pointerRadius || pointerHeight / 2) +
-  //               10;
-  //             setSecondaryPointerY(y);
-  //             setSecondaryPointerItem(item);
-  //           }
-  //         }
-  //       }}
-  //       // onResponderReject={evt => {
-  //       //   console.log('evt...reject.......',evt);
-  //       // }}
-  //       onResponderEnd={evt => {
-  //         // console.log('evt...end.......',evt);
-  //         setResponderStartTime(0);
-  //         setPointerIndex(-1);
-  //         setResponderActive(false);
-  //         if (!persistPointer)
-  //           setTimeout(() => setPointerX(0), pointerVanishDelay);
-  //       }}
-  //       onResponderTerminationRequest={evt => false}
-  //       // onResponderTerminate={evt => {
-  //       //   console.log('evt...terminate.......',evt);
-  //       // }}
-  //       // onResponderRelease={evt => {
-  //       //   setResponderStartTime(0);
-  //       //   setResponderActive(false);
-  //       //   setTimeout(() => setPointerX(0), pointerVanishDelay);
-  //       // }}
-  //      style={{
-  //        ...svgWrapperViewStyle,
-  //        width: animatedWidth,
-  //       }}>
-  //       {lineSvgComponent(
-  //         points,
-  //         currentLineThickness,
-  //         color,
-  //         fillPoints,
-  //         startFillColor,
-  //         endFillColor,
-  //         startOpacity,
-  //         endOpacity,
-  //         strokeDashArray,
-  //         showArrow,
-  //         arrowPoints,
-  //         arrowStrokeWidth,
-  //         arrowStrokeColor,
-  //         arrowFillColor,
-  //       )}
-  //     </Animated.View>
-  //   );
-  // };
-
   const remainingScrollViewProps = {
     onScroll: (ev: any) => {
       props.onScroll?.(ev)
@@ -2278,9 +1906,12 @@ export const LineChart = (props: LineChartPropsType) => {
     }
   }
 
+  const divRef = useRef<HTMLDivElement>(null)
+  const divOffsetX = divRef.current?.getBoundingClientRect().x ?? 0
+
   const renderChartContent = () => {
     return (
-      <>
+      <div ref={divRef}>
         {dataSet
           ? pointsFromSet.length
             ? dataSet.map((set, index) => {
@@ -2816,7 +2447,8 @@ export const LineChart = (props: LineChartPropsType) => {
               bottom:
                 58 + labelsExtraHeight + xAxisLabelsVerticalShift - overflowTop,
               // width: totalWidth,
-              zIndex: 20
+              zIndex: 20,
+              pointerEvents: 'none'
             }}
           >
             {!stripOverPointer && renderStripAndLabel()}
@@ -2907,7 +2539,7 @@ export const LineChart = (props: LineChartPropsType) => {
             )}
           </div>
         ) : null} */}
-      </>
+      </div>
     )
   }
 
