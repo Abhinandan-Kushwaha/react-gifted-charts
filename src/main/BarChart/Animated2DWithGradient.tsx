@@ -175,7 +175,7 @@ const Animated2DWithGradient = (props: Ianimated2DWithGradientPropsType) => {
           style={(() => {
             let style: React.CSSProperties = {
               position: 'absolute',
-              top: -30 - height,
+              top: -60 - height,
               height: 30,
               width: item.barWidth || barWidth || 30,
               display: 'flex',

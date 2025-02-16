@@ -1,3 +1,14 @@
+## 🎉 0.0.12
+
+### 🐛 Bug fixes
+
+1. Fixed the position of X-axis labels and top labels in Bar charts.
+2. Fixed the issue- "tooltip in Donut charts getting cropped". See https://github.com/Abhinandan-Kushwaha/react-native-gifted-charts/issues/983
+
+---
+---
+---
+
 ## 🎉 0.0.11
 
 ### ✨ Features added-

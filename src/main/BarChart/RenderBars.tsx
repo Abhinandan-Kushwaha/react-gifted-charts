@@ -121,21 +121,23 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
                 (value < 0
                   ? -xAxisLabelsVerticalShift
                   : xAxisLabelsVerticalShift),
-            bottom: top
-              ? (containerHeight || 200) +
-                (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
-              : (rotateLabel
-                  ? -40
-                  : -6 -
-                    xAxisTextNumberOfLines * 18 -
-                    (value < 0
-                      ? -xAxisLabelsVerticalShift
-                      : xAxisLabelsVerticalShift)) -
-                barMarginBottom -
-                xAxisThickness -
-                (value < 0 && !autoShiftLabels
-                  ? -labelsDistanceFromXaxis
-                  : labelsDistanceFromXaxis)
+            bottom:
+              32 +
+              (top
+                ? (containerHeight || 200) +
+                  (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
+                : (rotateLabel
+                    ? -40
+                    : -6 -
+                      xAxisTextNumberOfLines * 18 -
+                      (value < 0
+                        ? -xAxisLabelsVerticalShift
+                        : xAxisLabelsVerticalShift)) -
+                  barMarginBottom -
+                  xAxisThickness -
+                  (value < 0 && !autoShiftLabels
+                    ? -labelsDistanceFromXaxis
+                    : labelsDistanceFromXaxis))
           }
           if (rotateLabel) {
             if (horizontal) {
@@ -215,16 +217,18 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
                 (value < 0
                   ? -xAxisLabelsVerticalShift
                   : xAxisLabelsVerticalShift),
-            bottom: top
-              ? (containerHeight || 200) +
-                (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
-              : (rotateLabel
-                  ? -40
-                  : -6 -
-                    xAxisTextNumberOfLines * 18 -
-                    xAxisLabelsVerticalShift) -
-                barMarginBottom -
-                labelsDistanceFromXaxis,
+            bottom:
+              32 +
+              (top
+                ? (containerHeight || 200) +
+                  (secondaryXAxis?.labelsDistanceFromXaxis ?? 15)
+                : (rotateLabel
+                    ? -40
+                    : -6 -
+                      xAxisTextNumberOfLines * 18 -
+                      xAxisLabelsVerticalShift) -
+                  barMarginBottom -
+                  labelsDistanceFromXaxis),
             opacity: appearingOpacity
           }
           if (value < 0) {
