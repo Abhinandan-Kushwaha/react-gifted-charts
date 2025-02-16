@@ -25,16 +25,6 @@ export const PieChartMain = (props: PieChartMainProps) => {
     strokeWidth,
     strokeColor,
     innerRadius,
-    showTooltip,
-    tooltipWidth,
-    tooltipComponent,
-    tooltipVerticalShift,
-    tooltipHorizontalShift,
-    tooltipTextNoOfLines,
-    tooltipBackgroundColor,
-    tooltipBorderRadius,
-    tooltipSelectedIndex,
-    getTooltipText,
     showText,
     textColor,
     textSize,
@@ -420,62 +410,6 @@ export const PieChartMain = (props: PieChartMainProps) => {
             zIndex: -1
           }}
         />
-      ) : null}
-      {showTooltip && tooltipSelectedIndex !== -1 ? (
-        <div
-          style={{
-            position: 'absolute',
-            left:
-              touchX > (radius + extraRadius) * 1.5
-                ? props.tooltipHorizontalShift
-                  ? touchX - tooltipHorizontalShift
-                  : touchX -
-                    (tooltipWidth ??
-                      getTooltipText(tooltipSelectedIndex).length * 10)
-                : touchX - tooltipHorizontalShift,
-            top:
-              touchY < 30
-                ? props.tooltipVerticalShift
-                  ? touchY - tooltipVerticalShift
-                  : touchY
-                : touchY - tooltipVerticalShift
-          }}
-        >
-          {data[tooltipSelectedIndex].tooltipComponent ? (
-            data[tooltipSelectedIndex].tooltipComponent?.()
-          ) : tooltipComponent ? (
-            tooltipComponent(tooltipSelectedIndex)
-          ) : (
-            <div
-              style={{
-                backgroundColor: tooltipBackgroundColor.toString(),
-                borderRadius: tooltipBorderRadius,
-                paddingLeft: 8,
-                paddingRight: 8,
-                paddingBottom: 8,
-                paddingTop: 4,
-                width: tooltipWidth
-              }}
-            >
-              <text
-                // numberOfLines={tooltipTextNoOfLines}
-                style={{
-                  color:
-                    data[tooltipSelectedIndex].textColor ||
-                    textColor ||
-                    'white',
-                  textAlign: 'center',
-                  fontSize: textSize,
-                  fontFamily: font,
-                  fontWeight,
-                  fontStyle
-                }}
-              >
-                {getTooltipText(tooltipSelectedIndex)}
-              </text>
-            </div>
-          )}
-        </div>
       ) : null}
     </div>
   )

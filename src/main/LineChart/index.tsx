@@ -316,7 +316,8 @@ export const LineChart = (props: LineChartPropsType) => {
     renderTooltip3,
     renderTooltip4,
     renderTooltip5,
-    renderTooltipSecondary
+    renderTooltipSecondary,
+    pointerItemLocal
     // oldPoints
   } = useLineChart({ ...props, parentWidth: props.parentWidth ?? screenWidth })
 
@@ -1082,25 +1083,20 @@ export const LineChart = (props: LineChartPropsType) => {
   }
 
   const renderStripAndLabel = () => {
-    let pointerItemLocal, pointerYLocal
+    let pointerYLocal
 
-    pointerItemLocal = [pointerItem]
     let arr = [pointerY]
     if (pointerY2 !== 0) {
       arr.push(pointerY2)
-      pointerItemLocal.push(pointerItem2)
     }
     if (pointerY3 !== 0) {
       arr.push(pointerY3)
-      pointerItemLocal.push(pointerItem3)
     }
     if (pointerY4 !== 0) {
       arr.push(pointerY4)
-      pointerItemLocal.push(pointerItem4)
     }
     if (pointerY5 !== 0) {
       arr.push(pointerY5)
-      pointerItemLocal.push(pointerItem5)
     }
     pointerYLocal = Math.min(...arr)
 
