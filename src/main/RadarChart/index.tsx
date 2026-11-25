@@ -330,7 +330,7 @@ export const RadarChart = (props: RadarChartProps) => {
               fontWeight={fontWeightLocal}
               fontFamily={fontFamilyLocal}
               fill={colorLocal}
-              textAnchor={textAnchorLocal ?? 'middle'}
+              textAnchor={(textAnchorLocal ?? 'middle') as "inherit" | "end" | "start" | "middle" | undefined}
               alignmentBaseline={alignmentBaselineLocal ?? 'middle'}
             >
               {category}

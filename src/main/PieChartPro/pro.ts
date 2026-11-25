@@ -44,7 +44,7 @@ interface IsvgProps {
       innerRadius = donut ? radius / 2.5 : 0,
       strokeWidth = 0,
       edgesRadius = 0,
-      startAngle = 0,
+      initialAngle: startAngle = 0,
       ring
     } = props
     let endAngle = props.endAngle ?? startAngle + Math.PI * (semiCircle ? 1 : 2)

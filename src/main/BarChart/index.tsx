@@ -12,14 +12,13 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
   // const opacValue = useMemo(() => new Animated.Value(0), []);
   // const widthValue = useMemo(() => new Animated.Value(0), []);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const scrollRef = props.scrollRef ?? useRef(null)
+  const scrollRef = useRef(props.scrollRef ?? null)
   const scrollToBarRef = useRef<null | HTMLDivElement>(null)
   const remainingScrollViewProps = {
     onScroll: (ev: any) => props.onScroll?.(ev),
     onTouchStart: (evt: any) => {
       if (props.renderTooltip) {
-        setSelectedIndex(-1)
+        setSelectedIndex([-1])
       }
     }
   }
@@ -143,7 +142,8 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
       pointerRadius,
       pointerWidth,
       pointerItemLocal,
-      pointerColorLocal
+      pointerColorLocal,
+      isBarChart: true
     })
   }
 
@@ -301,6 +301,10 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
   const renderChart = () => {
     if (stackData) {
       return stackData.map((item, index) => {
+        const {selectedIndex, ...stackRestProps} = getPropsCommonForBarAndStack(
+          item,
+          index,
+        );
         return (
           <RenderStackBars
             key={index + ''}
@@ -316,7 +320,9 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
             selectedStackIndex={selectedStackIndex}
             setSelectedStackIndex={setSelectedStackIndex}
             // yTranslate={yTranslate}
-            {...getPropsCommonForBarAndStack(item, index)}
+            selectedIndex={selectedIndex[0]}
+            {...stackRestProps}
+            item={item}
           />
         )
       })
@@ -350,6 +356,7 @@ export const BarChart = (props: BarChartPropsTypeForWeb) => {
           scrollToBarRef={scrollToBarRef}
           scrollToIndex={props.scrollToIndex}
           {...getPropsCommonForBarAndStack(item, index)}
+          item={item}
         />
       ))
     }
