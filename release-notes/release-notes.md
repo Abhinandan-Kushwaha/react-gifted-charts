@@ -1,3 +1,21 @@
+## 🎉 0.0.13
+
+### 🐛 Bug fixes
+
+1. Fixed the issue- "barBorderRadius / roundedTop not supported on BarChart". See https://github.com/Abhinandan-Kushwaha/react-gifted-charts/issues/23
+2. Fixed the issue- "Area Chart runtime error on mouseover". See https://github.com/Abhinandan-Kushwaha/react-gifted-charts/issues/26
+3. Fixed the issue- "Pointer appears in Line/Area charts even without `pointerConfig`"
+4. Fixed positioning of pointerStrip and pointer in Line, Area and Bar charts.
+
+### 🔨 Refactor
+
+1. Updated the dependencies.
+2. Fixed types. See https://github.com/Abhinandan-Kushwaha/react-gifted-charts/issues/25
+
+---
+---
+---
+
 ## 🎉 0.0.12
 
 ### 🐛 Bug fixes

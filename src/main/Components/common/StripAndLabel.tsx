@@ -30,8 +30,8 @@ export const StripAndLabel = (props: any) => {
     <div
       style={{
         position: 'absolute',
-        left: pointerX + (pointerItemLocal[0].pointerShiftX || 0),
-        top: pointerYLocal
+        left: pointerX + (pointerItemLocal[0]?.pointerShiftX || 0) - (isBarChart ? 0 : 18),
+        top: pointerYLocal - (isBarChart ? 0 : 26)
       }}
     >
       {(
@@ -90,7 +90,8 @@ export const StripAndLabel = (props: any) => {
             marginTop: pointerStripUptoDataPoint
               ? 0
               : containerHeight - pointerStripHeight,
-            width: pointerLabelWidth
+            width: pointerLabelWidth,
+            zIndex: 21
           }}
         >
           {pointerLabelComponent?.(pointerItemLocal, secondaryPointerItem)}

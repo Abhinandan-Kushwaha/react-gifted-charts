@@ -24,8 +24,6 @@ import { animated, useSpring } from '@react-spring/web'
 // let initialData: Array<lineDataItem> | null = null;
 // let animations: Array<Animated.Value> = [];
 
-let prevPoints = ''
-
 export const LineChart = (props: LineChartPropsType) => {
   const scrollRef = useRef(null)
   // const opacValue = useMemo(() => new Animated.Value(0), []);
@@ -525,7 +523,7 @@ export const LineChart = (props: LineChartPropsType) => {
     position: 'absolute',
     height: svgHeight,
     left: 0,
-    bottom: 73 + xAxisLabelsVerticalShift + labelsExtraHeight - xAxisThickness,
+    bottom: 70 + xAxisLabelsVerticalShift + labelsExtraHeight - xAxisThickness,
     zIndex: 1,
     overflow: 'hidden'
   }
@@ -1753,6 +1751,7 @@ export const LineChart = (props: LineChartPropsType) => {
           // left:8,
         }}
         onMouseMove={(evt) => {
+          if(!pointerConfig) return
           const x = (evt.clientX ?? 0) - divOffsetX + 40
           activatePointers(x)
         }}
@@ -1844,6 +1843,7 @@ export const LineChart = (props: LineChartPropsType) => {
           // left:8,
         }}
         onMouseMove={(evt) => {
+          if(!pointerConfig) return
           const x = (evt.clientX ?? 0) - divOffsetX + 40
           activatePointers(x)
         }}
@@ -2441,7 +2441,7 @@ export const LineChart = (props: LineChartPropsType) => {
               height:
                 extendedContainerHeight + noOfSectionsBelowXAxis * stepHeight,
               bottom:
-                58 + labelsExtraHeight + xAxisLabelsVerticalShift - overflowTop,
+                42 + labelsExtraHeight + xAxisLabelsVerticalShift - overflowTop,
               // width: totalWidth,
               zIndex: 20,
               pointerEvents: 'none'

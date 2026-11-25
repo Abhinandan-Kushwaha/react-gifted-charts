@@ -62,10 +62,16 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
     barMarginBottom = 0,
     highlightEnabled,
     highlightedBarIndex,
-    lowlightOpacity
+    lowlightOpacity,
+    barBorderRadius,
+    barBorderBottomLeftRadius,
+    barBorderBottomRightRadius,
+    roundedTop,
   } = props
 
   const { barHeight, tooltipProps } = useRenderBars(props)
+  const barBorderTopLeftRadius = roundedTop ? barWidth / 2 : props.barBorderTopLeftRadius
+  const barBorderTopRightRadius = roundedTop ? barWidth / 2 : props.barBorderTopRightRadius
 
   const {
     commonStyleForBar,
@@ -364,6 +370,11 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
           barBorderColor={barBorderColor}
           commonStyleForBar={commonStyleForBar}
           yTranslate={yTranslate}
+          barBorderRadius={barBorderRadius}
+          barBorderTopLeftRadius={barBorderTopLeftRadius}
+          barBorderTopRightRadius={barBorderTopRightRadius}
+          barBorderBottomLeftRadius={barBorderBottomLeftRadius}
+          barBorderBottomRightRadius={barBorderBottomRightRadius}
         />
       </div>
     )
@@ -501,7 +512,7 @@ const RenderBars = (props: IRenderBarsPropsTypes) => {
           {barContent()}
         </div>
       )}
-      {renderTooltip && selectedIndex === index && (
+      {renderTooltip && selectedIndex.includes?.(index) && (
         <Tooltip {...tooltipProps} />
       )}
     </>

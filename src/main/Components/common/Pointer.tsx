@@ -10,13 +10,15 @@ export const Pointer = (props:any) => {
     pointerWidth,
     pointerItemLocal,
     pointerColorLocal,
+    pointerShiftX,
+    isBarChart = false
   } = props;
   return (
     <div
       style={{
         position: 'absolute',
-        left: pointerX + (pointerX.pointerShiftX || 0),
-        top: pointerYLocal - 2,
+        left: pointerX + (pointerShiftX || 0) - (isBarChart ? 0 : 18),
+        top: pointerYLocal - (isBarChart ? 2 : 20),
       }}>
       {pointerComponent ? (
         pointerComponent()
