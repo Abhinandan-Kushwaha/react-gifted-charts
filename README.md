@@ -5,7 +5,7 @@ ReactJS counterpart of [react-native-gifted-charts](https://github.com/Abhinanda
 ## Installation 
 
 ```sh
-npm i react-gifted-charts @react-spring/web
+npm i react-gifted-charts @react-spring/web react-native-web
 ```
 
 **Note:** If you are facing issues related to `react-refresh`, add below code to your package.json-
